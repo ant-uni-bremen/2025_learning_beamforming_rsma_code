@@ -6,6 +6,7 @@ import src
 from src.models.precoders.learned_precoder import get_learned_precoder_normalized
 from src.models.precoders.learned_precoder import get_learned_precoder_decentralized_normalized
 from src.models.precoders.learned_precoder import get_learned_rsma_power_factor
+from src.models.precoders.learned_precoder import get_learned_rsma_power_and_common_part
 from src.models.precoders.adapted_precoder import adapt_robust_slnr_complete_precoder_normed
 from src.models.precoders.scaled_precoder import scale_robust_slnr_complete_precoder_normed
 from src.data.precoder.mmse_precoder import mmse_precoder_normalized
@@ -152,7 +153,6 @@ def get_precoding_learned_rsma_power_scaling(
     rsma_factor = get_learned_rsma_power_factor(
         state=state,
         power_factor_network=power_factor_network,
-
     )
 
     w_precoder = rate_splitting_no_norm(
@@ -160,12 +160,54 @@ def get_precoding_learned_rsma_power_scaling(
         noise_power_watt=config.noise_power_watt,
         power_constraint_watt=config.power_constraint_watt,
         rsma_factor=rsma_factor,
-        common_part_precoding_style='MRT',
+        common_part_precoding_style=config.common_part_precoding_style,
     )
 
     return w_precoder
 
+def get_precoding_learned_rsma_power_and_common_part(
+        config: 'src.config.config.Config',
+        user_manager: 'src.data.user_manager.UserManager',
+        satellite_manager: 'src.data.satellite_manager.SatelliteManager',
+        norm_factors: dict,
+        precoder_network: tf.keras.models.Model,
+) -> np.array:
 
+    state = config.config_learner.get_state(
+        config=config,
+        user_manager=user_manager,
+        satellite_manager=satellite_manager,
+        norm_factors=norm_factors,
+        **config.config_learner.get_state_args
+    )
+
+    power_factor_network, common_part_precoding_no_norm = get_learned_rsma_power_and_common_part(
+        state=state,
+        precoder_network=precoder_network,
+    )
+
+    power_constraint_private_part = config.power_constraint_watt ** power_factor_network
+    power_constraint_common_part = config.power_constraint_watt - power_constraint_private_part
+
+    common_power = np.linalg.norm(common_part_precoding_no_norm, ord=2)
+    common_part_precoding = np.sqrt(power_constraint_common_part) * common_part_precoding_no_norm / common_power
+
+    private_part_precoding = mmse_precoder_normalized(
+        channel_matrix=satellite_manager.erroneous_channel_state_information,
+        noise_power_watt=config.noise_power_watt,
+        power_constraint_watt=power_constraint_private_part,
+        sat_nr=config.sat_nr,
+        sat_ant_nr=config.sat_ant_nr
+    )
+
+    w_precoder = np.hstack([common_part_precoding[np.newaxis].T, private_part_precoding])
+
+    power_precoding = np.trace(w_precoder.conj().T @ w_precoder)
+
+    if power_precoding>1.0001*config.power_constraint_watt:
+        raise ValueError('Warning: The power constraint is not met')
+
+    return w_precoder
 
 def get_precoding_learned_decentralized_blind(
         config: 'src.config.config.Config',

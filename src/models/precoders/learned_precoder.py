@@ -57,9 +57,25 @@ def get_learned_rsma_power_factor(
 
     power_factor_network = power_factor_network.call(state.astype('float32')[np.newaxis])[0]
     power_factor_network = power_factor_network.numpy().flatten()
-    power_factor_network = 1/2 * (np.tanh(power_factor_network) + 1)
+    # power_factor_network = 1/2 * (np.tanh(power_factor_network) + 1)
+    power_factor_network = np.clip(power_factor_network, 0, 1)
 
     return power_factor_network
+
+def get_learned_rsma_power_and_common_part(
+        state: np.ndarray,
+        precoder_network: tf.keras.Model,
+) -> [np.ndarray, np.ndarray]:
+
+    network_output, _ = precoder_network.call(state.astype('float32')[np.newaxis])
+    network_output = network_output.numpy().flatten()
+
+    # rsma_factor = 0.7 * (np.tanh(action) + 0.8)
+    # rsma_factor = 0.5 * network_output[0] + 0.5
+    power_factor_network = np.clip(network_output[0], 0, 1)
+    common_part_precoding_no_norm = real_vector_to_half_complex_vector(network_output[1:])
+
+    return power_factor_network, common_part_precoding_no_norm
 
 
 def get_learned_precoder_decentralized_no_norm(

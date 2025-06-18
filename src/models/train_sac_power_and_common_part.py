@@ -1,6 +1,6 @@
-
 from pathlib import Path
 from sys import path as sys_path
+
 project_root_path = Path(Path(__file__).parent, '..', '..')
 sys_path.append(str(project_root_path.resolve()))
 
@@ -65,7 +65,7 @@ from src.utils.update_sim import (
 )
 
 
-def train_sac_RSMA_power_scaling_factor(
+def train_sac_RSMA_power_and_common_part(
         config: 'src.config.config.Config',
         optuna_trial: optuna.Trial or None = None,
 ) -> Path:
@@ -130,7 +130,6 @@ def train_sac_RSMA_power_scaling_factor(
         # clean model checkpoints
         for high_score_prior_id, high_score_prior in enumerate(reversed(high_scores)):
             if high_score > 1.05 * high_score_prior or high_score_prior_id > 3:
-
                 name = f'power_scale_rsma_snap_{high_score_prior:.3f}'
 
                 prior_checkpoint_path = Path(
@@ -155,7 +154,7 @@ def train_sac_RSMA_power_scaling_factor(
 
     logger = config.logger.getChild(__name__)
 
-    config.config_learner.algorithm_args['network_args']['num_actions'] = 1
+    config.config_learner.algorithm_args['network_args']['num_actions'] = 1 + 2 * config.sat_tot_ant_nr
 
     satellite_manager = SatelliteManager(config=config)
     user_manager = UserManager(config=config)
@@ -204,27 +203,37 @@ def train_sac_RSMA_power_scaling_factor(
             state_current = state_next
             step_experience['state'] = state_current
 
+
             # determine action based on state
             action = sac.get_action(state=state_current)
             step_experience['action'] = action
 
-            #rsma_factor = 1/2 * (np.tanh(action) + 1)
-            rsma_factor = np.clip(action, 0, 1)
+
+            # rsma_factor = 0.7 * (np.tanh(action) + 0.8)
+            rsma_factor = 0.5 * action[0] + 0.5
+            rsma_factor = np.clip(action[0], 0, 1)
 
             # reshape to fit reward calculation
-            w_precoder = rate_splitting_no_norm(
+
+            common_part_precoding_no_norm = real_vector_to_half_complex_vector(action[1:])
+            # w_precoder_vector = rad_and_phase_to_complex_vector(action)
+
+            print(rsma_factor)
+            power_constraint_private_part = config.power_constraint_watt**rsma_factor
+            power_constraint_common_part = config.power_constraint_watt - power_constraint_private_part
+
+            common_power = np.linalg.norm(common_part_precoding_no_norm, ord=2)
+            common_part_precoding = np.sqrt(power_constraint_common_part) * common_part_precoding_no_norm / common_power
+
+            private_part_precoding = mmse_precoder_normalized(
                 channel_matrix=satellite_manager.erroneous_channel_state_information,
                 noise_power_watt=config.noise_power_watt,
-                power_constraint_watt=config.power_constraint_watt,
-                rsma_factor=rsma_factor,
-                common_part_precoding_style='basic',
+                power_constraint_watt=power_constraint_private_part,
+                sat_nr=config.sat_nr,
+                sat_ant_nr=config.sat_ant_nr
             )
-            #real_vector_to_half_complex_vector(action)
-            # w_precoder_vector = rad_and_phase_to_complex_vector(action)
-            #w_precoder = w_precoder_vector.reshape((config.sat_nr*config.sat_ant_nr, config.user_nr + 1))
-            #w_precoder_normed = norm_precoder(precoding_matrix=w_precoder, power_constraint_watt=config.power_constraint_watt,
-            #                                  per_satellite=True, sat_nr=config.sat_nr, sat_ant_nr=config.sat_ant_nr)
-            #print(w_precoder_normed)
+
+            w_precoder = np.hstack([common_part_precoding[np.newaxis].T, private_part_precoding])
 
             # step simulation based on action, determine reward
             sum_rate_reward = calc_sum_rate_RSMA(
@@ -234,14 +243,14 @@ def train_sac_RSMA_power_scaling_factor(
             )
             fairness_reward = calc_jain_fairness_RSMA(
                 channel_state=satellite_manager.channel_state_information,
-                w_precoder=w_precoder_normed,
+                w_precoder=w_precoder,
                 noise_power_watt=config.noise_power_watt,
             )
             reward = sum_rate_reward
             step_experience['reward'] = reward
-            #print(reward)
-            #exit()
-            
+            print(reward)
+            exit()
+
             # optionally add the corresponding mmse precoder to the data set
             if config.rng.random() < config.config_learner.percentage_mmse_samples_added_to_exp_buffer:
                 add_mmse_experience()  # todo note: currently state_next saved in the mmse experience is not correct
@@ -291,8 +300,8 @@ def train_sac_RSMA_power_scaling_factor(
         # If doing optuna optimization: check trial results, stop early if bad
         if optuna_trial:
             window = 10
-            lower_end = max(training_episode_id-window, 0)
-            episode_result = np.nanmean(metrics['mean_sum_rate_per_episode'][lower_end:training_episode_id+1])
+            lower_end = max(training_episode_id - window, 0)
+            episode_result = np.nanmean(metrics['mean_sum_rate_per_episode'][lower_end:training_episode_id + 1])
 
             optuna_trial.report(episode_result, training_episode_id)
             if optuna_trial.should_prune():
@@ -332,4 +341,4 @@ def train_sac_RSMA_power_scaling_factor(
 
 if __name__ == '__main__':
     cfg = Config()
-    train_sac_RSMA_power_scaling_factor(config=cfg)
+    train_sac_RSMA_power_and_common_part(config=cfg)

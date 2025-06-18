@@ -113,16 +113,16 @@ if __name__ == '__main__':
 
     data_paths = [
         Path(cfg.output_metrics_path,
-             'test', 'error_sweep',
+             'test', 'error_sweep','PolicyLR_',
              'testing_mmse_sweep_0.0_0.5.gzip'),
         Path(cfg.output_metrics_path,
-             'test', 'error_sweep',
+             'test', 'error_sweep', 'PolicyLR_',
              'testing_learned_sweep_0.0_0.5.gzip'),
         Path(cfg.output_metrics_path,
-             'test', 'error_sweep',
+             'test', 'error_sweep', 'PolicyLR_',
              'testing_learned_rsma_full_sweep_0.0_0.5.gzip'),
         Path(cfg.output_metrics_path,
-             'test', 'error_sweep',
+             'test', 'error_sweep', 'PolicyLR_',
              'testing_learned_rsma_power_factor_sweep_0.0_0.5.gzip'),
 
     ]
@@ -137,7 +137,7 @@ if __name__ == '__main__':
 
     plot_error_sweep_testing_graph(
         paths=data_paths,
-        metric='fairness',
+        metric='sumrate',
         name='error_sweep_test',
         width=plot_width,
         height=plot_height,

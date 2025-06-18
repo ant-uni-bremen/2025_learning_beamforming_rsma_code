@@ -39,9 +39,8 @@ config = Config()
 
 model_path = Path(  # SAC only
     config.trained_models_path,
-    '1sat_32ant_100k~0_9usr_10k~5k_additive_0.0',
-    'base',
-    'full_snap_5.222',
+    '02_rsma_journal_error_sweep_with_error',
+    'full_snap_3.874',
 )
 
 if any(value in plot for value in ['learned', 'slnr_adapted_complete']):
