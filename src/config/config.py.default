@@ -67,12 +67,13 @@ class Config:
         self.radius_orbit: float = self.altitude_orbit + self.radius_earth  # Orbit radius with Earth center r0, earth centered
 
         # User
-        self.user_nr: int = 3  # Number of users
+        self.user_nr: int = 3 # Number of users
         self.user_gain_dBi: float = 0  # User gain in dBi
-        self.user_dist_average: float = 100_000  # Average user distance in m
-        self.user_dist_bound: float = 50_000  # Variance of user distance, uniform distribution [avg-bound, avg+bound]
+        self.user_dist_average: float = 25_000  # Average user distance in m
+        self.user_dist_bound: float = 1  # Variance of user distance in [0,1], uniform distribution [avg-bound, avg+bound]
         self.user_center_aod_earth_deg: float = 90  # Average center of users
-        self.user_activity_selection: str = 'all_active'  # ['all_active', 'random_uniform_centered']
+        self.user_area = self.user_dist_average  # Only valid if user activity selection is _area_constant
+        self.user_activity_selection: str = 'all_active_area_flexible' # ['all_active_area_constant', 'random_uniform_centered_area_constant', 'all_active_area_flexible', 'random_uniform_centered_area_flexible']
 
         self.user_gain_linear: float = 10**(self.user_gain_dBi / 10)  # User gain linear
 
@@ -81,7 +82,7 @@ class Config:
         self.sat_tot_ant_nr: int = 16  # Total number of  Tx antennas, should be a number larger than sat nr
         self.sat_gain_dBi: float = 20  # Total sat TODO: Wert nochmal checken
         self.sat_dist_average: float = 100_000  # Average satellite distance in meter
-        self.sat_dist_bound: float = 0  # Variance of sat distance, uniform distribution [avg-bound, avg+bound]
+        self.sat_dist_bound: float = 0  # Variance of sat distance in [0,1], uniform distribution [avg-bound, avg+bound]
         self.sat_center_aod_earth_deg: float = 90  # Average center of satellites
 
         self.sat_gain_linear: float = 10**(self.sat_gain_dBi / 10)  # Gain per satellite linear
@@ -97,6 +98,9 @@ class Config:
         self.csi_error_scale = 2  # factor by which error is magnified for csi received from other sats
         self.local_csi_own_quality = 'error_free'  # ['error_free', 'erroneous'] quality of local sats own csi
         self.local_csi_others_quality = 'erroneous'  # ['erroneous', 'scaled_erroneous'] quality of other satellites csi
+
+        # RSMA Parameters
+        self.common_part_precoding_style='basic'  # 'basic' or 'MRT'
 
         self._post_init()
 

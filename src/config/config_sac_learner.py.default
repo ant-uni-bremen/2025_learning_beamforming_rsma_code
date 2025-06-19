@@ -27,6 +27,8 @@ class ConfigSACLearner:
             'test'
         )
 
+        self.reward: dict = {'sum_rate':1, 'fairness':1}  # weighted reward for maximization, possible: {'sum_rate':1}, {'fairness':1}, {'sum_rate':1, 'fairness':1}
+
         self.get_state = get_state_erroneous_channel_state_information
         self.get_state_args = {
             'csi_format': 'rad_phase',  # 'rad_phase', 'rad_phase_reduced', 'real_imag'
@@ -71,9 +73,9 @@ class ConfigSACLearner:
             },
             'value_network_optimizer': tf.keras.optimizers.Adam,
             'value_network_optimizer_args': {
-                # 'learning_rate': 1e-3,
-                'learning_rate': tf.keras.optimizers.schedules.CosineDecayRestarts(initial_learning_rate=7e-5,
-                                                                                   first_decay_steps=100),
+                'learning_rate': 1e-3,
+                # 'learning_rate': tf.keras.optimizers.schedules.CosineDecayRestarts(initial_learning_rate=7e-5,
+                #                                                                    first_decay_steps=100),
                 'amsgrad': False,
             },
             'policy_network_args': {
@@ -85,9 +87,9 @@ class ConfigSACLearner:
             },
             'policy_network_optimizer': tf.keras.optimizers.Adam,
             'policy_network_optimizer_args': {
-                # 'learning_rate': 1e-4,
-                'learning_rate': tf.keras.optimizers.schedules.CosineDecayRestarts(initial_learning_rate=7e-6,
-                                                                                   first_decay_steps=100),
+                 'learning_rate': 1e-4,
+                # 'learning_rate': tf.keras.optimizers.schedules.CosineDecayRestarts(initial_learning_rate=7e-6,
+                #                                                                    first_decay_steps=100),
                 'amsgrad': True,
             },
         }
