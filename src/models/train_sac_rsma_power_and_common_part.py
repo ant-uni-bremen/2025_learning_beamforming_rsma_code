@@ -210,15 +210,13 @@ def train_sac_RSMA_power_and_common_part(
 
 
             # rsma_factor = 0.7 * (np.tanh(action) + 0.8)
-            rsma_factor = 0.5 * action[0] + 0.5
-            rsma_factor = np.clip(action[0], 0, 1)
+            rsma_factor = np.clip(action[0], 0, 1)  # guarantee values between 0 and 1
 
             # reshape to fit reward calculation
 
             common_part_precoding_no_norm = real_vector_to_half_complex_vector(action[1:])
             # w_precoder_vector = rad_and_phase_to_complex_vector(action)
 
-            print(rsma_factor)
             power_constraint_private_part = config.power_constraint_watt**rsma_factor
             power_constraint_common_part = config.power_constraint_watt - power_constraint_private_part
 
@@ -236,20 +234,26 @@ def train_sac_RSMA_power_and_common_part(
             w_precoder = np.hstack([common_part_precoding[np.newaxis].T, private_part_precoding])
 
             # step simulation based on action, determine reward
-            sum_rate_reward = calc_sum_rate_RSMA(
-                channel_state=satellite_manager.channel_state_information,
-                w_precoder=w_precoder,
-                noise_power_watt=config.noise_power_watt,
-            )
-            fairness_reward = calc_jain_fairness_RSMA(
-                channel_state=satellite_manager.channel_state_information,
-                w_precoder=w_precoder,
-                noise_power_watt=config.noise_power_watt,
-            )
-            reward = sum_rate_reward
+            reward = 0
+            if 'sum_rate' in config.config_learner.reward:
+                sum_rate_reward = calc_sum_rate_RSMA(
+                    channel_state=satellite_manager.channel_state_information,
+                    w_precoder=w_precoder,
+                    noise_power_watt=config.noise_power_watt,
+                )
+                reward += config.config_learner.reward['sum_rate'] * sum_rate_reward
+            if 'fairness' in config.config_learner.reward:
+                fairness_reward = calc_jain_fairness_RSMA(
+                    channel_state=satellite_manager.channel_state_information,
+                    w_precoder=w_precoder,
+                    noise_power_watt=config.noise_power_watt,
+                )
+                reward += config.config_learner.reward['fairness'] * fairness_reward
+            if any(key not in ['sum_rate', 'fairness'] for key in config.config_learner.reward.keys()):
+                raise ValueError("No valid reward provided")
+
             step_experience['reward'] = reward
-            print(reward)
-            exit()
+
 
             # optionally add the corresponding mmse precoder to the data set
             if config.rng.random() < config.config_learner.percentage_mmse_samples_added_to_exp_buffer:

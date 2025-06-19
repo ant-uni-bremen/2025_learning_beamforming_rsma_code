@@ -214,17 +214,24 @@ def train_sac(
                                               per_satellite=True, sat_nr=config.sat_nr, sat_ant_nr=config.sat_ant_nr)
 
             # step simulation based on action, determine reward
-            sum_rate_reward = calc_sum_rate(
-                channel_state=satellite_manager.channel_state_information,
-                w_precoder=w_precoder_normed,
-                noise_power_watt=config.noise_power_watt,
-            )
-            fairness_reward = calc_jain_fairness(
-                channel_state=satellite_manager.channel_state_information,
-                w_precoder=w_precoder_normed,
-                noise_power_watt=config.noise_power_watt,
-            )
-            reward = sum_rate_reward
+            reward = 0
+            if 'sum_rate' in config.config_learner.reward:
+                sum_rate_reward = calc_sum_rate(
+                    channel_state=satellite_manager.channel_state_information,
+                    w_precoder=w_precoder_normed,
+                    noise_power_watt=config.noise_power_watt,
+                )
+                reward += config.config_learner.reward['sum_rate'] * sum_rate_reward
+            if 'fairness' in config.config_learner.reward:
+                fairness_reward = calc_jain_fairness(
+                    channel_state=satellite_manager.channel_state_information,
+                    w_precoder=w_precoder_normed,
+                    noise_power_watt=config.noise_power_watt,
+                )
+                reward += config.config_learner.reward['fairness'] * fairness_reward
+            if any(key not in ['sum_rate', 'fairness'] for key in config.config_learner.reward.keys()):
+                raise ValueError("No valid reward provided")
+
             step_experience['reward'] = reward
 
             # optionally add the corresponding mmse precoder to the data set

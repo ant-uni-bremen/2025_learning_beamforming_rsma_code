@@ -29,7 +29,7 @@ def main():
             user_manager=usr_man,
             satellite_manager=sat_man,
             rsma_factor=rsma_factor,
-            common_part_precoding_style='MRT',
+            common_part_precoding_style=cfg.common_part_precoding_style,
         )
 
         sum_rates[rsma_idx] = calc_sum_rate_RSMA(

@@ -12,14 +12,15 @@ from src.analysis.helpers.test_rsma_precoder import test_rsma_precoder_user_dist
 
 def main():
 
-    rsma_factors = np.arange(0, 1+0.01, step=0.01)  # exclusive interval
-    common_part_precoding_style = 'basic'
     monte_carlo_iterations = 10
 
+    rsma_factors = np.arange(0, 1+0.01, step=0.01)  # exclusive interval
     distance_sweep_range = np.linspace(0, 50_000, 100)
 
     cfg = Config()
     cfg.show_plots = False
+
+    common_part_precoding_style = cfg.common_part_precoding_style
 
     results = np.zeros((len(rsma_factors), len(distance_sweep_range)))
     results_fairness = np.zeros((len(rsma_factors), len(distance_sweep_range)))

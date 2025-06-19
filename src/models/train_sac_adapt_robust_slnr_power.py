@@ -37,6 +37,9 @@ from src.models.helpers.get_state_norm_factors import (
 from src.data.calc_sum_rate import (
     calc_sum_rate,
 )
+from src.data.calc_fairness import(
+    calc_jain_fairness
+)
 from src.utils.norm_precoder import (
     norm_precoder,
 )
@@ -202,13 +205,25 @@ def train_sac_adapt_robust_slnr_power(
             )
 
             # step simulation based on action, determine reward
-            reward = calc_sum_rate(
-                channel_state=satellite_manager.channel_state_information,
-                w_precoder=normed_scaled_precoding,
-                noise_power_watt=config.noise_power_watt,
-            )
+            reward = 0
+            if 'sum_rate' in config.config_learner.reward:
+                sum_rate_reward = calc_sum_rate(
+                    channel_state=satellite_manager.channel_state_information,
+                    w_precoder=normed_scaled_precoding,
+                    noise_power_watt=config.noise_power_watt,
+                )
+                reward += config.config_learner.reward['sum_rate'] * sum_rate_reward
+            if 'fairness' in config.config_learner.reward:
+                fairness_reward = calc_jain_fairness(
+                    channel_state=satellite_manager.channel_state_information,
+                    w_precoder=normed_scaled_precoding,
+                    noise_power_watt=config.noise_power_watt,
+                )
+                reward += config.config_learner.reward['fairness'] * fairness_reward
+            if any(key not in ['sum_rate', 'fairness'] for key in config.config_learner.reward.keys()):
+                raise ValueError("No valid reward provided")
+
             step_experience['reward'] = reward
-            # print(reward)
 
             # update simulation state
             update_sim(config, satellite_manager, user_manager)

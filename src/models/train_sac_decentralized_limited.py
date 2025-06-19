@@ -34,6 +34,9 @@ from src.models.helpers.get_state_norm_factors import (
 from src.data.calc_sum_rate import (
     calc_sum_rate,
 )
+from src.data.calc_fairness import(
+    calc_jain_fairness
+)
 from src.utils.real_complex_vector_reshaping import (
     real_vector_to_half_complex_vector,
     complex_vector_to_double_real_vector,
@@ -201,13 +204,27 @@ def train_sac_decentralized_limited(
                                               per_satellite=True, sat_nr=config.sat_nr, sat_ant_nr=config.sat_ant_nr)
 
             # step simulation based on action, determine reward
-            reward = calc_sum_rate(
-                channel_state=satellite_manager.channel_state_information,
-                w_precoder=w_precoder_normed,
-                noise_power_watt=config.noise_power_watt,
-            )
+            reward = 0
+            if 'sum_rate' in config.config_learner.reward:
+                sum_rate_reward = calc_sum_rate(
+                    channel_state=satellite_manager.channel_state_information,
+                    w_precoder=w_precoder_normed,
+                    noise_power_watt=config.noise_power_watt,
+                )
+                reward += config.config_learner.reward['sum_rate'] * sum_rate_reward
+            if 'fairness' in config.config_learner.reward:
+                fairness_reward = calc_jain_fairness(
+                    channel_state=satellite_manager.channel_state_information,
+                    w_precoder=w_precoder_normed,
+                    noise_power_watt=config.noise_power_watt,
+                )
+                reward += config.config_learner.reward['fairness'] * fairness_reward
+            if any(key not in ['sum_rate', 'fairness'] for key in config.config_learner.reward.keys()):
+                raise ValueError("No valid reward provided")
+
             for sat_id in range(config.sat_nr):
                 step_experiences[sat_id]['reward'] = reward
+
 
             # update simulation state
             update_sim(config, satellite_manager, user_manager)
