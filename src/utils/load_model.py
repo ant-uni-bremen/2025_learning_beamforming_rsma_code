@@ -4,13 +4,15 @@ import gzip
 import pickle
 
 import keras
+import tensorflow as tf
 
 
 def load_model(
         model_path: Path,
 ) -> (keras.Model, dict):
 
-    network = keras.models.load_model(Path(model_path, 'model'))
+    # network = keras.models.load_model(Path(model_path, 'model'))
+    network = tf.saved_model.load(Path(model_path, 'model'))
 
     with gzip.open(Path(model_path, 'config', 'norm_dict.gzip')) as file:
         norm_dict = pickle.load(file)

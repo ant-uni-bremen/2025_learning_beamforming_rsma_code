@@ -14,6 +14,7 @@ import pickle
 import numpy as np
 from matplotlib.pyplot import show as plt_show
 import optuna
+import tensorflow as tf
 
 import src
 from src.config.config import (
@@ -116,7 +117,8 @@ def train_sac(
 
         logger.info(f'Saved model checkpoint at mean reward {extra:.3f}')
 
-        sac.networks['policy'][0]['primary'].save(Path(checkpoint_path, 'model'))
+        # sac.networks['policy'][0]['primary'].save(Path(checkpoint_path, 'model'))
+        tf.saved_model.save(sac.networks['policy'][0]['primary'], Path(checkpoint_path, 'model'))
 
         # save config
         config.save(Path(checkpoint_path, 'config'))
