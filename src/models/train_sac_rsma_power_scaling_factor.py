@@ -5,10 +5,6 @@ project_root_path = Path(Path(__file__).parent, '..', '..')
 sys_path.append(str(project_root_path.resolve()))
 
 from datetime import datetime
-from shutil import (
-    copytree,
-    rmtree,
-)
 import gzip
 import pickle
 
@@ -17,51 +13,21 @@ from matplotlib.pyplot import show as plt_show
 import optuna
 
 import src
-from src.config.config import (
-    Config,
-)
-from src.data.satellite_manager import (
-    SatelliteManager,
-)
-from src.data.user_manager import (
-    UserManager,
-)
-from src.models.algorithms.soft_actor_critic import (
-    SoftActorCritic,
-)
-from src.models.helpers.get_state_norm_factors import (
-    get_state_norm_factors,
-)
-from src.data.calc_sum_rate_RSMA import (
-    calc_sum_rate_RSMA,
-)
-from src.data.calc_fairness_RSMA import (
-    calc_jain_fairness_RSMA,
-)
-from src.data.precoder.mmse_precoder import (
-    mmse_precoder_normalized,
-)
+from src.config.config import Config
+from src.data.satellite_manager import SatelliteManager
+from src.data.user_manager import UserManager
+from src.data.calc_sum_rate_RSMA import calc_sum_rate_RSMA
+from src.data.calc_fairness_RSMA import calc_jain_fairness_RSMA
 from src.data.precoder.rate_splitting import rate_splitting_no_norm
-from src.utils.real_complex_vector_reshaping import (
-    real_vector_to_half_complex_vector,
-    complex_vector_to_double_real_vector,
-    rad_and_phase_to_complex_vector,
-)
-from src.utils.norm_precoder import (
-    norm_precoder,
-)
-from src.utils.plot_sweep import (
-    plot_sweep,
-)
+from src.models.algorithms.soft_actor_critic import SoftActorCritic
+from src.models.helpers.get_state_norm_factors import get_state_norm_factors
+from src.utils.plot_sweep import plot_sweep
+from src.utils.progress_printer import progress_printer
+from src.utils.update_sim import update_sim
+from src.utils.save_model import save_model_checkpoint
 from src.utils.profiling import (
     start_profiling,
     end_profiling,
-)
-from src.utils.progress_printer import (
-    progress_printer,
-)
-from src.utils.update_sim import (
-    update_sim,
 )
 
 

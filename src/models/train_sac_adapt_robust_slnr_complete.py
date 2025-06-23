@@ -5,10 +5,6 @@ project_root_path = Path(Path(__file__).parent, '..', '..')
 sys_path.append(str(project_root_path.resolve()))
 
 from datetime import datetime
-from shutil import (
-    copytree,
-    rmtree,
-)
 import gzip
 import pickle
 
@@ -17,44 +13,23 @@ from matplotlib.pyplot import show as plt_show
 import optuna
 
 import src
-from src.config.config import (
-    Config,
-)
-from src.data.satellite_manager import (
-    SatelliteManager,
-)
-from src.data.user_manager import (
-    UserManager,
-)
+from src.config.config import Config
+from src.data.satellite_manager import SatelliteManager
+from src.data.user_manager import UserManager
 from src.data.precoder.calc_autocorrelation import calc_autocorrelation
 from src.data.precoder.robust_SLNR_precoder import robust_SLNR_precoder_no_norm
-from src.models.algorithms.soft_actor_critic import (
-    SoftActorCritic,
-)
-from src.models.helpers.get_state_norm_factors import (
-    get_state_norm_factors,
-)
-from src.data.calc_sum_rate import (
-    calc_sum_rate,
-)
-from src.data.calc_fairness import(
-    calc_jain_fairness
-)
-from src.utils.norm_precoder import (
-    norm_precoder,
-)
-from src.utils.plot_sweep import (
-    plot_sweep,
-)
+from src.data.calc_sum_rate import calc_sum_rate
+from src.data.calc_fairness import calc_jain_fairness
+from src.models.algorithms.soft_actor_critic import SoftActorCritic
+from src.models.helpers.get_state_norm_factors import get_state_norm_factors
+from src.utils.norm_precoder import norm_precoder
+from src.utils.plot_sweep import plot_sweep
+from src.utils.progress_printer import progress_printer
+from src.utils.update_sim import update_sim
+from src.utils.save_model import save_model_checkpoint
 from src.utils.profiling import (
     start_profiling,
     end_profiling,
-)
-from src.utils.progress_printer import (
-    progress_printer,
-)
-from src.utils.update_sim import (
-    update_sim,
 )
 
 
