@@ -11,6 +11,7 @@ from src.data.calc_sum_rate import calc_sum_rate
 from src.data.calc_fairness import calc_jain_fairness
 from src.data.calc_sum_rate_RSMA import calc_sum_rate_RSMA
 from src.data.calc_fairness_RSMA import calc_jain_fairness_RSMA
+from src.models.helpers.get_state import get_state_erroneous_channel_state_information_local
 from src.utils.load_model import (
     load_model,
     load_models,
@@ -89,14 +90,14 @@ def test_sac_precoder_user_distance_sweep(
 
     return metrics
 
-def test_sac_user_number_sweep(
+def test_sac_precoder_user_number_sweep(
         config: 'import src.config.config',
         user_number_sweep_range: np.ndarray,
         monte_carlo_iterations: int,
         model_path: Path,
         metrics: list = ['sumrate'],  # 'sumrate', 'fairness'
 ) -> dict:
-    """Test a RSMA precoder over a range of user numbers"""
+    """Test a precoder over a range of user numbers"""
 
     calc_reward_funcs = []
     if 'sumrate' in metrics:
@@ -171,6 +172,8 @@ def test_sac_precoder_decentralized_limited_error_sweep(
 
     config.config_learner.get_state_args['local_csi_own_quality'] = config.local_csi_own_quality
     config.config_learner.get_state_args['local_csi_others_quality'] = config.local_csi_others_quality
+
+    config.config_learner.get_state = get_state_erroneous_channel_state_information_local
 
     if config.local_csi_own_quality == 'error_free' and config.local_csi_others_quality == 'erroneous':
         precoder_name = 'sac_decentralized_limited_L1'

@@ -36,7 +36,7 @@ def scale_robust_slnr_complete_precoder_no_norm(
         power_constraint_watt=power_constraint_watt
     )
 
-    scaling_vector = scaling_network(scaler_input_state[np.newaxis])[0].numpy().flatten()
+    scaling_vector = scaling_network.call(scaler_input_state.astype('float32')[np.newaxis])[0].numpy().flatten()
     scaling_matrix = np.diag(scaling_vector)
     scaled_precoding = np.matmul(robust_slnr_precoding, scaling_matrix)  # scale columns -> precoding vectors per user
 

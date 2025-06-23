@@ -73,49 +73,6 @@ def train_sac_decentralized_blind(
         else:
             progress_printer(progress=progress, real_time_start=real_time_start, logger=logger)
 
-    def save_model_checkpoints(extra):
-
-        name = f''
-        if extra is not None:
-            name += f'snap_{extra:.3f}'
-
-        checkpoint_path = Path(
-            config.trained_models_path,
-            config.config_learner.training_name,
-            'decentralized_blind',
-            name,
-        )
-
-        for sac_id, sac in enumerate(sacs):
-            sac_path = Path(checkpoint_path, f'agent_{sac_id}')
-            sac.networks['policy'][0]['primary'].save(Path(sac_path, 'model'))
-
-        logger.info(f'Saved model checkpoint at mean reward {extra:.3f}')
-
-        # save config
-        config.save(Path(checkpoint_path, 'config'))
-
-        # save norm dict
-        with gzip.open(Path(checkpoint_path, 'config', 'norm_dict.gzip'), 'wb') as file:
-            pickle.dump(norm_dict, file)
-
-        # clean model checkpoints
-        for high_score_prior_id, high_score_prior in enumerate(reversed(high_scores)):
-            if high_score > 1.05 * high_score_prior or high_score_prior_id > 3:
-
-                name = f'snap_{high_score_prior:.3f}'
-
-                prior_checkpoint_path = Path(
-                    config.trained_models_path,
-                    config.config_learner.training_name,
-                    'decentralized_blind',
-                    name
-                )
-                rmtree(path=prior_checkpoint_path, ignore_errors=True)
-                high_scores.remove(high_score_prior)
-
-        return checkpoint_path
-
     def save_results():
 
         name = f'training_error_decentralized_blind.gzip'
@@ -285,14 +242,20 @@ def train_sac_decentralized_blind(
             f' std {np.nanstd(episode_metrics["sum_rate_per_step"]):.2f},'
             f' current exploration: {np.nanmean(episode_metrics["mean_log_prob_density"]):.2f},'
             f' value loss: {np.nanmean(episode_metrics["value_loss"]):.5f}'
-            # f' curr. lr: {sac.networks["policy"][0]["primary"].optimizer.learning_rate(sac.networks["policy"][0]["primary"].optimizer.iterations):.2E}'
         )
 
         # save network snapshot
         if episode_mean_sum_rate > high_score:
             high_score = episode_mean_sum_rate.copy()
             high_scores.append(high_score)
-            best_model_path = save_model_checkpoints(extra=episode_mean_sum_rate)
+            best_model_path, high_scores = save_model_checkpoint(
+                config=config,
+                networks=[sac.networks['policy'][0]['primary'] for sac in sacs],
+                norm_dict=norm_dict,
+                logger=logger,
+                high_scores=high_scores,
+                parent_string='decentralized_blind',
+            )
 
     # end compute performance profiling
     if profiler is not None:

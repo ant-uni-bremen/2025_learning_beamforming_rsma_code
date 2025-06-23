@@ -3,15 +3,13 @@ from pathlib import Path
 import gzip
 import pickle
 
-import keras
 import tensorflow as tf
 
 
 def load_model(
         model_path: Path,
-) -> (keras.Model, dict):
+) -> (tf.Module, dict):
 
-    # network = keras.models.load_model(Path(model_path, 'model'))
     network = tf.saved_model.load(Path(model_path, 'model'))
 
     with gzip.open(Path(model_path, 'config', 'norm_dict.gzip')) as file:
@@ -23,14 +21,14 @@ def load_model(
 
 def load_models(
         models_path: Path,
-) -> (list[keras.Model], dict):
+) -> (list[tf.Module], dict):
 
     paths = sorted([
         Path(path, 'model')
         for path in models_path.iterdir()
         if path.is_dir() and 'agent' in path.name
     ])
-    networks = [keras.models.load_model(model_path) for model_path in paths]
+    networks = [tf.saved_model.load(Path(model_path)) for model_path in paths]
 
     with gzip.open(Path(models_path, 'config', 'norm_dict.gzip')) as file:
         norm_dict = pickle.load(file)

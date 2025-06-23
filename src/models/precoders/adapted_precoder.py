@@ -38,7 +38,7 @@ def adapt_robust_slnr_complete_precoder_no_norm(
     )
 
     # scale it using neural network
-    scaling_vector = scaling_network(scaler_input_state[np.newaxis])[0].numpy()
+    scaling_vector = scaling_network.call(scaler_input_state.astype('float32')[np.newaxis])[0].numpy()
     scaling_matrix = scaling_vector.reshape(robust_slnr_precoding.shape)
 
     scaled_robust_slnr_precoding = np.multiply(scaling_matrix, robust_slnr_precoding)

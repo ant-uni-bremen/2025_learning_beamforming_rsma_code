@@ -1,9 +1,14 @@
 
+"""
+Superficial analysis of network weights
+"""
+
 from pathlib import Path
 
 import numpy as np
-from keras.models import load_model
 import matplotlib.pyplot as plt
+
+from src.utils.load_model import load_model
 
 
 from src.config.config import Config
@@ -28,9 +33,9 @@ model_path = Path(
     'model',
 )
 
-model = load_model(model_path)
+model, _ = load_model(model_path)
 
-print(model.trainable_variables[0].shape)
+trainable_variables = model.signatures['serving_default'].trainable_variables
 
 # [radius1, radius2, ..., angle1, angle2, ...]
 # [usr0ant0, usr0ant1, usr0ant2, ..., usr1ant0, ...]
@@ -42,7 +47,7 @@ for usr_id in range(total_users):
     for antenna_id in range(total_antennas):
         sums_rad[antenna_id, usr_id] = sum(
             abs(
-                model.trainable_variables[0][usr_id*total_antennas + antenna_id, :]
+                trainable_variables[0][usr_id*total_antennas + antenna_id, :]
             )
         )
 
@@ -50,20 +55,20 @@ for usr_id in range(total_users):
     for antenna_id in range(total_antennas):
         sums_pha[antenna_id, usr_id] = sum(
             abs(
-                model.trainable_variables[0][usr_id*total_antennas + antenna_id + int(model.trainable_variables[0].shape[0] / 2), :]
+                trainable_variables[0][usr_id*total_antennas + antenna_id + int(trainable_variables[0].shape[0] / 2), :]
             )
         )
 
-# for value_id in range(model.trainable_variables[0].shape[0]):
+# for value_id in range(trainable_variables[0].shape[0]):
 #     if value_id == 0:
 #         print('rad')
-#     if value_id == model.trainable_variables[0].shape[0] / 2:
+#     if value_id == trainable_variables[0].shape[0] / 2:
 #         print('pha')
 #
 #     print(
 #         sum(
 #             abs(
-#                 model.trainable_variables[0][value_id,:]
+#                 trainable_variables[0][value_id,:]
 #             )
 #         )
 #     )
@@ -79,21 +84,21 @@ for i in range(total_antennas):
         text = ax.text(i, j, round(obj[i, j], 1),
                        ha="center", va="center", color="w")
 
-print(
-    np.mean(
-        sums_pha[0:5, :]
-    )
-)
-print(
-    np.mean(
-        sums_pha[5:11, :]
-    )
-)
-print(
-    np.mean(
-        sums_pha[11:, :]
-    )
-)
+# print(
+#     np.mean(
+#         sums_pha[0:5, :]
+#     )
+# )
+# print(
+#     np.mean(
+#         sums_pha[5:11, :]
+#     )
+# )
+# print(
+#     np.mean(
+#         sums_pha[11:, :]
+#     )
+# )
 # print(
 #     sum(
 #     sum(

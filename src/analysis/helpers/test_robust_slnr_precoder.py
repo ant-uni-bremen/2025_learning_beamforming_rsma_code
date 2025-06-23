@@ -58,7 +58,7 @@ def test_robust_slnr_precoder_distance_sweep(
         precoder_name='robust_slnr',
         monte_carlo_iterations=monte_carlo_iterations,
         mode='user',
-        get_precoder_func=lambda cfg, sat_man: get_precoding_robust_slnr(cfg, sat_man),
+        get_precoder_func=lambda cfg, usr_man, sat_man: get_precoding_robust_slnr(cfg, usr_man, sat_man),
         calc_reward_funcs=calc_reward_funcs,
     )
 

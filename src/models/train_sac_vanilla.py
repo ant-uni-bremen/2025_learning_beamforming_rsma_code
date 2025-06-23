@@ -1,4 +1,9 @@
 
+"""
+This file is used for ablation study, testing vanilla SAC without any of the
+adjustments (weight regularization, batch normalization, ...) made to improve convergence.
+"""
+
 from pathlib import Path
 from sys import path as sys_path
 project_root_path = Path(Path(__file__).parent, '..', '..')

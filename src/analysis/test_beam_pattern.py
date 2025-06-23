@@ -209,11 +209,12 @@ for iter_id in range(1):
             sum_rate_slnr_adapted_complete = calc_sum_rate(channel_state=satellite_manager.channel_state_information, w_precoder=w_adapted, noise_power_watt=config.noise_power_watt)
 
             plot_beampattern(
-                satellite=satellite_manager.satellites[0],
-                users=user_manager.users,
+                config=config,
+                satellite_manager=satellite_manager,
+                user_manager=user_manager,
                 w_precoder=w_adapted,
+                position_sweep_range=angle_sweep_range,
                 plot_title='slnr_adapted_complete',
-                angle_sweep_range=angle_sweep_range,
             )
 
             print(f'slnr_adapted_complete: {sum_rate_slnr_adapted_complete}')
@@ -229,11 +230,12 @@ for iter_id in range(1):
         )
 
         plot_beampattern(
-            satellite=satellite_manager.satellites[0],
-            users=user_manager.users,
+            config=config,
+            satellite_manager=satellite_manager,
+            user_manager=user_manager,
             w_precoder=w_ones,
+            position_sweep_range=angle_sweep_range,
             plot_title='ones',
-            angle_sweep_range=angle_sweep_range,
         )
 
         print(f'ones: {sum_rate_ones}')

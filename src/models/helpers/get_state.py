@@ -122,6 +122,8 @@ def get_state_erroneous_channel_state_information(
 
 
 def get_state_erroneous_channel_state_information_local(
+        config: 'src.config.config.Config',
+        user_manager: 'src.data.user_manager.UserManager',
         satellite_manager: 'src.data.satellite_manager.SatelliteManager',
         csi_format: str,
         local_csi_own_quality: str,

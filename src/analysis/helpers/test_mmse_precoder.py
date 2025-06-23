@@ -146,7 +146,7 @@ def test_mmse_precoder_decentralized_limited_error_sweep(
         error_sweep_range=error_sweep_range,
         precoder_name=precoder_name,
         monte_carlo_iterations=monte_carlo_iterations,
-        get_precoder_func=lambda cfg, sat_man: get_precoding_mmse_decentralized_limited(cfg, sat_man),
+        get_precoder_func=lambda cfg, usr_man, sat_man: get_precoding_mmse_decentralized_limited(cfg, usr_man, sat_man),
         calc_reward_funcs=calc_reward_funcs,
     )
 
@@ -174,7 +174,7 @@ def test_mmse_precoder_decentralized_blind_error_sweep(
         error_sweep_range=error_sweep_range,
         precoder_name='mmse_decentralized_blind',
         monte_carlo_iterations=monte_carlo_iterations,
-        get_precoder_func=lambda cfg, sat_man: get_precoding_mmse_decentralized_blind(cfg, sat_man),
+        get_precoder_func=lambda cfg, usr_man, sat_man: get_precoding_mmse_decentralized_blind(cfg, usr_man, sat_man),
         calc_reward_funcs=calc_reward_funcs,
     )
 
