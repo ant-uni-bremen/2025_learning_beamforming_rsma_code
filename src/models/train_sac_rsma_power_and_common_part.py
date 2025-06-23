@@ -108,7 +108,7 @@ def train_sac_RSMA_power_and_common_part(
 
         name = f''
         if extra is not None:
-            name += f'power_scale_rsma_snap_{extra:.3f}'
+            name += f'power_common_rsma_snap_{extra:.3f}'
         checkpoint_path = Path(
             config.trained_models_path,
             config.config_learner.training_name,
@@ -130,7 +130,7 @@ def train_sac_RSMA_power_and_common_part(
         # clean model checkpoints
         for high_score_prior_id, high_score_prior in enumerate(reversed(high_scores)):
             if high_score > 1.05 * high_score_prior or high_score_prior_id > 3:
-                name = f'power_scale_rsma_snap_{high_score_prior:.3f}'
+                name = f'power_common_rsma_snap_{high_score_prior:.3f}'
 
                 prior_checkpoint_path = Path(
                     config.trained_models_path,
@@ -145,7 +145,7 @@ def train_sac_RSMA_power_and_common_part(
 
     def save_results():
 
-        name = f'training_error_rsma_power_scale.gzip'
+        name = f'training_error_rsma_power_common.gzip'
 
         results_path = Path(config.output_metrics_path, config.config_learner.training_name, 'base')
         results_path.mkdir(parents=True, exist_ok=True)
