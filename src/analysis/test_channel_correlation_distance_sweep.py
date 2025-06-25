@@ -1,4 +1,5 @@
 
+from datetime import datetime
 from pathlib import Path
 import gzip
 import pickle
@@ -12,6 +13,7 @@ from src.data.user_manager import UserManager
 from src.utils.update_sim import update_sim
 from src.utils.calc_channel_correlation import calc_channel_correlation
 from src.utils.format_value import format_value
+from src.utils.progress_printer import progress_printer
 
 
 def test_channel_correlation_user_sweep(
@@ -27,12 +29,13 @@ def test_channel_correlation_user_sweep(
     user_manager = UserManager(config)
     update_sim(config, satellite_manager, user_manager)
 
-    mean_channel_correlations = np.zeros(len(distance_sweep_range))
-    std_channel_correlations = np.zeros(len(distance_sweep_range))
-
     if disable_wiggle:
         config.user_dist_bound = 0
 
+    mean_channel_correlations = np.zeros(len(distance_sweep_range))
+    std_channel_correlations = np.zeros(len(distance_sweep_range))
+
+    start = datetime.now()
     for distance_id, distance in enumerate(distance_sweep_range):
 
         config.user_dist_average = distance
@@ -46,6 +49,8 @@ def test_channel_correlation_user_sweep(
                 channel_1=satellite_manager.channel_state_information[user_1_id, :],
                 channel_2=satellite_manager.channel_state_information[user_2_id, :]
             ))
+
+        progress_printer(progress=(distance_id+1)/len(distance_sweep_range), real_time_start=start)
 
         mean_channel_correlations[distance_id] = np.mean(distance_correlations)
         std_channel_correlations[distance_id] = np.std(distance_correlations)
