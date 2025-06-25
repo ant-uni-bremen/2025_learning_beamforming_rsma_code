@@ -109,9 +109,9 @@ if __name__ == '__main__':
     plot_cfg = PlotConfig()
 
     data_paths = [
-        Path(cfg.output_metrics_path,
-             'test', 'user_number_sweep',
-             'testing_mmse_sweep_1_16.gzip'),
+        # Path(cfg.output_metrics_path,
+        #      'test', 'user_number_sweep',
+        #      'testing_mmse_sweep_1_16.gzip'),
         Path(cfg.output_metrics_path,
              'test', 'user_number_sweep',
              'testing_learned_sac_sweep_1_16.gzip'),
@@ -121,6 +121,9 @@ if __name__ == '__main__':
         Path(cfg.output_metrics_path,
              'test', 'user_number_sweep',
              'testing_learned_rsma_power_factor_sweep_1_16.gzip'),
+        Path(cfg.output_metrics_path,
+             'test', 'user_number_sweep',
+             'testing_learned_rsma_power_common_sweep_1_16.gzip'),
         # Path(cfg.output_metrics_path,
         #      'sat_2_ant_4_usr_3_satdist_10000_usrdist_1000', 'distance_sweep',
         #      'testing_sac_error_0.1_userwiggle_30_snap_3.422_sweep_970.0_1029.9899999999454.gzip'),
@@ -133,14 +136,14 @@ if __name__ == '__main__':
     plot_width = 0.99 * plot_cfg.textwidth
     plot_height = plot_width * 0.42
 
-    plot_legend = ['MMSE','SAC', 'RSMA full', 'RSMA power']
+    plot_legend = ['SAC', 'RSMA full', 'RSMA power', 'RSMA common']
     plot_markerstyle = ['v','o', 's', '^']
     plot_colors = [plot_cfg.cp2['gold'],plot_cfg.cp2['blue'], plot_cfg.cp2['magenta'], plot_cfg.cp2['black']]
     plot_linestyles = ['-','-', '-', '--']
 
     plot_user_number_sweep_testing_graph(
         paths=data_paths,
-        metric='fairness',
+        metric='sumrate',
         name='user_sweep_test_long',
         width=plot_width,
         height=plot_height,

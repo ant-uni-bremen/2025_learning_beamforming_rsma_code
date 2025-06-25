@@ -72,6 +72,23 @@ def plot_error_sweep_testing_graph(
         else:
             linestyle = None
 
+        ax.errorbar(
+            data_entry[0],
+            data_entry[1][metric_key]['mean'],
+            yerr=data_entry[1][metric_key]['std'],
+            marker=marker,
+            color=color,
+            linestyle=linestyle,
+            label=legend[data_id],
+            # solid_capstyle='round',
+            # ecolor=change_lightness(color=color, amount=0.3),
+            # elinewidth=2,
+            # capthick=2,
+            # markevery=[0, -1],
+            # markeredgecolor='black',
+            # fillstyle='none'
+        )
+
         ax.plot(
             data_entry[0],
             data_entry[1][metric_key]['mean'],
@@ -113,27 +130,30 @@ if __name__ == '__main__':
 
     data_paths = [
         Path(cfg.output_metrics_path,
-             'test', 'error_sweep','PolicyLR_',
-             'testing_mmse_sweep_0.0_0.5.gzip'),
+             'test', 'error_sweep',
+             'testing_mmse_sweep_0.0_0.25.gzip'),
         Path(cfg.output_metrics_path,
-             'test', 'error_sweep', 'PolicyLR_',
-             'testing_learned_sweep_0.0_0.5.gzip'),
+             'test', 'error_sweep',
+             'testing_learned_sweep_0.0_0.25.gzip'),
         Path(cfg.output_metrics_path,
-             'test', 'error_sweep', 'PolicyLR_',
-             'testing_learned_rsma_full_sweep_0.0_0.5.gzip'),
+             'test', 'error_sweep',
+             'testing_learned_rsma_full_sweep_0.0_0.25.gzip'),
         Path(cfg.output_metrics_path,
-             'test', 'error_sweep', 'PolicyLR_',
-             'testing_learned_rsma_power_factor_sweep_0.0_0.5.gzip'),
+             'test', 'error_sweep',
+             'testing_learned_rsma_power_factor_sweep_0.0_0.25.gzip'),
+        Path(cfg.output_metrics_path,
+             'test', 'error_sweep',
+             'testing_rsma_0_basic_sweep_0.0_0.25.gzip'),
 
     ]
 
     plot_width = 0.99 * plot_cfg.textwidth
     plot_height = plot_width * 0.42
 
-    plot_legend = ['MMSE', 'SAC', 'RSMA full', 'RSMA power']
-    plot_markerstyle = ['v', 'o', 's', '^']
-    plot_colors = [plot_cfg.cp2['gold'], plot_cfg.cp2['blue'], plot_cfg.cp2['magenta'], plot_cfg.cp2['black']]
-    plot_linestyles = ['-', '-', '-', '--']
+    plot_legend = ['MMSE', 'SAC', 'RSMA full', 'RSMA power', 'RSMA 0']
+    plot_markerstyle = ['v', 'o', 's', '^','x']
+    plot_colors = [plot_cfg.cp2['gold'], plot_cfg.cp2['blue'], plot_cfg.cp2['magenta'], plot_cfg.cp2['black'], plot_cfg.cp2['green']]
+    plot_linestyles = ['-', '-', '-', '--', '--']
 
     plot_error_sweep_testing_graph(
         paths=data_paths,
