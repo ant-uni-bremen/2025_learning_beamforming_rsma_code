@@ -31,6 +31,9 @@ from src.utils.get_wavelength import (
 from src.utils.compare_configs import (
     compare_configs,
 )
+from src.utils.format_value import (
+    format_value,
+)
 
 
 class Config:
@@ -67,7 +70,7 @@ class Config:
         self.radius_orbit: float = self.altitude_orbit + self.radius_earth  # Orbit radius with Earth center r0, earth centered
 
         # User
-        self.user_nr: int = 3 # Number of users
+        self.user_nr: int = 2 # Number of users
         self.user_gain_dBi: float = 0  # User gain in dBi
         self.user_dist_average: float = 25_000  # Average user distance in m
         self.user_dist_bound: float = 1  # Variance of user distance in [0,1], uniform distribution [avg-bound, avg+bound]
@@ -79,7 +82,7 @@ class Config:
 
         # Satellite
         self.sat_nr: int = 1  # Number of satellites
-        self.sat_tot_ant_nr: int = 16  # Total number of  Tx antennas, should be a number larger than sat nr
+        self.sat_tot_ant_nr: int = 8  # Total number of  Tx antennas, should be a number larger than sat nr
         self.sat_gain_dBi: float = 20  # Total sat TODO: Wert nochmal checken
         self.sat_dist_average: float = 100_000  # Average satellite distance in meter
         self.sat_dist_bound: float = 0  # Variance of sat distance in [0,1], uniform distribution [avg-bound, avg+bound]
@@ -191,16 +194,6 @@ class Config:
         Generates a path for a specific config
         """
 
-        def format_distance(distance) -> str:
-            if distance < 1_000:
-                return f'{distance}'
-            else:
-                distance = distance / 1000
-                if distance.is_integer():
-                    return f'{int(distance)}k'
-                else:
-                    return f'{distance}k'
-
         config_name = None
 
         # compare to default configs
@@ -216,11 +209,11 @@ class Config:
             config_name = (
                 f'{self.sat_nr}sat_'
                 f'{self.sat_tot_ant_nr}ant_'
-                f'{format_distance(self.sat_dist_average)}~'
-                f'{format_distance(self.sat_dist_bound)}_'
+                f'{format_value(self.sat_dist_average)}~'
+                f'{format_value(self.sat_dist_bound)}_'
                 f'{self.user_nr}usr_'
-                f'{format_distance(self.user_dist_average)}~'
-                f'{format_distance(self.user_dist_bound)}'
+                f'{format_value(self.user_dist_average)}~'
+                f'{format_value(self.user_dist_bound)}'
             )
 
         return config_name
