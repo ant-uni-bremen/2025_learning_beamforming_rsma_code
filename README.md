@@ -4,7 +4,7 @@
 This code was used in the following unpublished work [(preprint not available yet)](url).
 
 [1]  Alea Schröder, Steffen Gracla, Dirk Wübben, Armin Dekorsy,
-"Robust Rate-Splitting Multiple Access using Reinforcement Learning in Low Earth Orbit Satellite Communications", under review.
+"Robust Rate-Splitting Multiple Access using Reinforcement Learning in Low Earth Orbit Satellite Communications", under preparation.
 
 Email: {**schroeder**, gracla, wuebben, dekorsy}@ant.uni-bremen.de
 
