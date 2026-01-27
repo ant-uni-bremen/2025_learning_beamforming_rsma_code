@@ -39,8 +39,8 @@ def mmse_precoder_no_norm(
 ) -> np.ndarray:
     """TODO: Comment"""
 
-    # inversion_constant_lambda = finfo('float32').tiny
-    inversion_constant_lambda = 0
+    inversion_constant_lambda = 1e-24 #np.finfo('float32').tiny
+    # inversion_constant_lambda = 0
 
     user_nr = channel_matrix.shape[0]
     sat_tot_ant_nr = channel_matrix.shape[1]
@@ -50,14 +50,16 @@ def mmse_precoder_no_norm(
             np.linalg.inv(
                 np.matmul(channel_matrix.conj().T, channel_matrix)
                 + (
-                    noise_power_watt
-                    * user_nr
-                    / power_constraint_watt
+                    # noise_power_watt
+                    # * user_nr
+                    # / power_constraint_watt
                     + inversion_constant_lambda
                 ) * np.eye(sat_tot_ant_nr)
             ),
             channel_matrix.conj().T
         )
     )
+
+
 
     return precoding_matrix

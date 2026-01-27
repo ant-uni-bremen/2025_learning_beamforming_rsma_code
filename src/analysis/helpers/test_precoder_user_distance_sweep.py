@@ -77,6 +77,7 @@ def test_precoder_user_distance_sweep(
         metrics_per_monte_carlo = np.zeros((len(calc_reward_funcs), monte_carlo_iterations))
 
         if mode == 'user':
+            config.user_distribution_mode = 'uniform'
             config.user_dist_average = distance_sweep_value
             config.user_dist_bound = 0
         elif mode == 'satellite':
