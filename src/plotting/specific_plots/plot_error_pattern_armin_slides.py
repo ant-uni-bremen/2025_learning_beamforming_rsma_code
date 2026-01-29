@@ -1,6 +1,7 @@
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+
 import numpy as np
 from gzip import (
     open as gzip_open,
@@ -22,6 +23,22 @@ from src.config.config_plotting import (
     change_lightness,
 )
 
+
+def export_curves_to_csv(data, metric_key_fn, out_csv: Path):
+    x0 = np.asarray(data[0][0], dtype=float)
+    ys = []
+    for d in data:
+        x = np.asarray(d[0], dtype=float)
+        if x.shape != x0.shape or np.nanmax(np.abs(x - x0)) > 1e-12:
+            raise ValueError("x-Achsen sind nicht identisch.")
+        key = metric_key_fn(d)
+        ys.append(np.asarray(d[1][key]["mean"], dtype=float))
+
+    M = np.column_stack([x0] + ys)
+    header = ["x"] + [f"y{i+1}" for i in range(len(ys))]
+    out_csv.parent.mkdir(parents=True, exist_ok=True)
+    np.savetxt(out_csv, M, delimiter=",", header=",".join(header), comments="")
+    return out_csv
 
 def plot_error_sweep_testing_graph(
         paths,
@@ -58,6 +75,13 @@ def plot_error_sweep_testing_graph(
     for path in paths:
         with gzip_open(path, 'rb') as file:
             data.append(pickle_load(file))
+
+    out_csv = Path(plots_parent_path) / f"{name}_{metric}.csv"
+    export_curves_to_csv(
+        data=data,
+        metric_key_fn=get_metric_key,
+        out_csv=out_csv,
+    )
 
     for data_id, data_entry in enumerate(data):
 
@@ -184,7 +208,7 @@ def plot_error_sweep_testing_graph(
     generic_styling(ax=ax)
     fig.tight_layout(pad=0)
 
-    save_figures(plots_parent_path=plots_parent_path, plot_name=name, padding=0)
+
 
 
 if __name__ == '__main__':
@@ -257,3 +281,4 @@ if __name__ == '__main__':
         plots_parent_path=plot_cfg.plots_parent_path,
     )
     plt.show()
+
