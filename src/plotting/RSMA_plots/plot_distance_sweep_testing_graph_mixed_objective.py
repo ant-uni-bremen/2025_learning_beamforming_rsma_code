@@ -3,6 +3,7 @@ import gzip
 import pickle
 
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import numpy as np
 from pathlib import (
     Path,
@@ -79,12 +80,20 @@ def plot_distance_sweep_testing_graph(
         # else:
         #     markevery = (int(len(data_entry[0])/10 / len(data)*data_id), int(len(data_entry[0])/10))
 
+        filled = (data_id == 2)
+        step = 18
+        offsets = [0, 0, 6, 6]  # pro Kurve ein anderer Start-Offset
+
+        offset = offsets[data_id] % step
+        markevery = (offset, step)
+
         ax.plot(data_entry[0],
                 data_entry[1][metric_key]['mean'],
                 color=color,
                 marker=marker,
-                markevery=7,
-                linestyle=linestyle
+                markevery=markevery,
+                linestyle=linestyle,
+                markerfacecolor=(color if filled else 'none'),
                 )
 
     ax.set_xlabel('User Distance $ D_{usr} $ [m]')
@@ -95,7 +104,7 @@ def plot_distance_sweep_testing_graph(
         ax.set_ylabel('Fairness $F$')
 
     if legend:
-        ax.legend(legend, ncols=3)
+        ax.legend(legend, ncols=2)
 
     generic_styling(ax=ax)
     fig.tight_layout(pad=0)
@@ -110,23 +119,23 @@ if __name__ == '__main__':
 
     data_paths = [
         Path(cfg.output_metrics_path,
-              '01_user_distance_without_error','distance_sweep',
-             'testing_learned_rsma_full_usersweep_1000_50000.gzip'),
+             '01_user_distance_without_error', '01_mixed_objective',
+             'testing_mmse_usersweep_500_50000.gzip'),
         Path(cfg.output_metrics_path,
-             '01_user_distance_without_error','distance_sweep',
-             'testing_learned_usersweep_1000_50000.gzip'),
+             '01_user_distance_without_error','01_mixed_objective',
+             'testing_learned_usersweep_500_50000.gzip'),
         Path(cfg.output_metrics_path,
-             '01_user_distance_without_error','distance_sweep',
-             'testing_mmse_usersweep_1000_50000.gzip'),
-        Path(cfg.output_metrics_path,
-             '01_user_distance_without_error', 'distance_sweep',
-             'testing_rsma_usersweep_1000_50000_alpha_0.gzip'),
-        Path(cfg.output_metrics_path,
-             '01_user_distance_without_error', 'distance_sweep',
-             'testing_rsma_usersweep_1000_50000_alpha_0.25.gzip'),
-        Path(cfg.output_metrics_path,
-             '01_user_distance_without_error', 'distance_sweep',
-             'testing_rsma_usersweep_1000_50000_alpha_0.75.gzip'),
+             '01_user_distance_without_error', '01_mixed_objective',
+             'testing_learned_rsma_full_usersweep_500_50000.gzip'),
+        # Path(cfg.output_metrics_path,
+        #      '01_user_distance_without_error', 'distance_sweep',
+        #      'testing_rsma_usersweep_1000_50000_alpha_0.gzip'),
+        # Path(cfg.output_metrics_path,
+        #      '01_user_distance_without_error', 'distance_sweep',
+        #      'testing_rsma_usersweep_1000_50000_alpha_0.25.gzip'),
+        # Path(cfg.output_metrics_path,
+        #      '01_user_distance_without_error', 'distance_sweep',
+        #      'testing_rsma_usersweep_1000_50000_alpha_0.75.gzip'),
         # Path(cfg.output_metrics_path,
         #      '01_user_distance_without_error', 'distance_sweep',
         #      'testing_rsma_usersweep_1000_50000_alpha_0.75.gzip'),
@@ -136,14 +145,14 @@ if __name__ == '__main__':
     plot_width = 0.99 * plot_cfg.textwidth
     plot_height = plot_width * 0.66
 
-    plot_legend = ['$ \\alpha =0 $', '$ \\alpha =0.5 $', '$ \\alpha =0.75 $', '$ \\alpha =1 $','RSMA power','RSMA power genie']
-    plot_markerstyle = [ '', '', '', '','d','']
-    plot_colors = [ change_lightness(plot_cfg.cp2['blue'], 0.5), plot_cfg.cp2['blue'], change_lightness(plot_cfg.cp2['green'], 0.5), plot_cfg.cp2['green'],plot_cfg.cp2['gold'],plot_cfg.cp2['magenta']]
-    plot_linestyles = [ ':', ':', ':', ':','-','-']
+    plot_legend = ['MMSE', 'SDMA', 'RSMA full', '$ \\alpha =1 $','RSMA power','RSMA power genie']
+    plot_markerstyle = [ 'o', 's', 'd', '','d','']
+    plot_colors = [ change_lightness(plot_cfg.cp2['black'], 1), plot_cfg.cp3['blue2'], change_lightness(plot_cfg.cp3['red2'], 1), plot_cfg.cp2['green'],plot_cfg.cp2['gold'],plot_cfg.cp2['magenta']]
+    plot_linestyles = [ '-', '-', '-', ':','-','-']
 
     plot_distance_sweep_testing_graph(
         paths=data_paths,
-        metric='sumrate',
+        metric='fairness',
         name='dist_sweep_test_long',
         width=plot_width,
         height=plot_height,

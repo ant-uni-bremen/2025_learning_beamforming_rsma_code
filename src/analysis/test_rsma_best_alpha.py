@@ -12,10 +12,10 @@ from src.analysis.helpers.test_rsma_precoder import test_rsma_precoder_user_dist
 
 def main():
 
-    monte_carlo_iterations = 100
+    monte_carlo_iterations = 1000
 
-    rsma_factors = np.arange(0, 1+0.1, step=0.1)  # exclusive interval
-    distance_sweep_range = np.linspace(0, 50_000, 100)
+    rsma_factors = np.arange(0, 1+0.01, step=0.01)  # exclusive interval
+    distance_sweep_range = np.arange(500,50500, 500) #np.linspace(500, 50_000, 100)
 
     cfg = Config()
     cfg.show_plots = False
@@ -63,8 +63,21 @@ def main():
 
 
     plt.show()
-
-    metrics = {'calc_sum_rate': {'mean': best_values}, 'fairness at best sumrate': fairness_at_best, 'power factor': best_power_factor}
+    metrics = {
+        'calc_sum_rate': {
+            'mean': best_values,
+            'std': np.zeros_like(best_values),
+        },
+        'calc_jain_fairness': {
+            'mean': fairness_at_best,
+            'std': np.zeros_like(fairness_at_best),
+        },
+        'power_factor': {
+            'mean': best_power_factor,
+            'std': np.zeros_like(best_power_factor),
+        }
+    }
+    # metrics = {'calc_sum_rate': {'mean': best_values}, 'fairness at best sumrate': fairness_at_best, 'power factor': best_power_factor}
 
     # print(best_values)
     precoder_name = 'rsma_genie'
