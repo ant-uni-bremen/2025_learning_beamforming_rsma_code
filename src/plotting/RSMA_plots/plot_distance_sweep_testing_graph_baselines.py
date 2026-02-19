@@ -43,7 +43,7 @@ def plot_distance_sweep_testing_graph(
 
     if metric == 'sumrate':
         match_string = 'calc_sum_rate'
-        y_label = 'Rate $R$ [bps/Hz]'
+        y_label = 'Achievable Rate $R$ [bps/Hz]'
     elif metric == 'fairness':
         match_string = 'calc_jain_fairness'
         y_label = 'Fairness $F$'
@@ -62,38 +62,36 @@ def plot_distance_sweep_testing_graph(
             2, 1, sharex=True,
             figsize=(width, height),
             gridspec_kw={'height_ratios': [1, 3], 'hspace': 0.05},
-            constrained_layout=True,   # besser als tight_layout bei sharex
+            constrained_layout=False,     # <-- wichtig
         )
         ax_alpha.tick_params(labelbottom=False)
     else:
-        fig, ax = plt.subplots(figsize=(width, height), constrained_layout=True)
+        fig, ax = plt.subplots(figsize=(width, height), constrained_layout=False)  # <-- wichtig
         ax_alpha = None
 
     # --- main metric curves (bottom axis)
     step = 14
-    offsets = [0, 0, 0, 0, 7, 0]  # 6 Kurven sauber versetzt
+    offsets = [0, 0, 0, 0, 7, 0]
 
     for data_id, (x, metrics_dict) in enumerate(data):
         metric_key = get_metric_key(metrics_dict, match_string)
 
         marker = markerstyle[data_id] if markerstyle is not None else None
+        if marker in ('None', 'none'):
+            marker = None
+
         color = colors[data_id] if colors is not None else None
         linestyle = linestyles[data_id] if linestyles is not None else None
 
         offset = offsets[data_id] % step if data_id < len(offsets) else (data_id * 3) % step
         markevery = (offset, step)
 
-        # Hollow markers (außer 'x' und None)
         hollow = (marker not in (None, '') and marker != 'x')
         mfc = 'none' if hollow else None
 
-        marker = markerstyle[data_id] if markerstyle is not None else None
-        if marker in ('None', 'none'):
-            marker = None
-
         # Genie betonen
         is_genie = (data_id == power_factor_from_path_idx)
-        lw = 2 if is_genie else 1.4
+        lw = 2.0 if is_genie else 1.4
 
         ax.plot(
             x,
@@ -109,7 +107,7 @@ def plot_distance_sweep_testing_graph(
         )
 
     ax.set_ylabel(y_label)
-    ax.set_xlabel('User Distance $D_{k}$ [km]')
+    ax.set_xlabel('User Distance $d_\mathcal{K}$ [km]')
     ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, pos: f'{x / 1000:g}'))
 
     # --- alpha curve (top axis) from selected dataset (genie)
@@ -120,25 +118,39 @@ def plot_distance_sweep_testing_graph(
 
         ax_alpha.plot(
             x_pf, alpha,
-            linestyle='None',  # keine Verbindungslinie
+            linestyle='None',
             marker='o',
             markersize=4,
             color='black',
-            markevery=1,
-            markerfacecolor='none',  # optional: hohl
+            markerfacecolor='none',
             markeredgewidth=1.0,
         )
-        ax_alpha.set_ylabel(r'best $\alpha$')
-        ax_alpha.set_ylim(0.0, 1.1)
+        ax_alpha.set_ylabel(r'$\alpha*$')
+        ax_alpha.set_ylim(0.0, 1.2)
         ax_alpha.set_yticks([0.0, 0.5, 1.0])
 
-        # --- legend
-    if legend:
-        ax.legend(legend, ncols=2)
-
+    # --- styling first (optional)
     generic_styling(ax=ax)
     if plot_power_factor:
         generic_styling(ax=ax_alpha)
+
+    # --- Legend BELOW the plot (figure-level)
+    if legend:
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0 + box.height * 0.1,
+                         box.width, box.height * 0.9])
+
+        # Put a legend below current axis
+        ax.legend(legend,
+                  loc='upper center',
+                  bbox_to_anchor=(0.48, -0.2),
+                  fancybox=True,
+                  ncol=3)
+
+        fig.subplots_adjust(bottom=0.25)     # Space for legends
+
+    # --- also give a bit of top margin (prevents cutting)
+    fig.subplots_adjust(top=0.98)
 
     save_figures(plots_parent_path=plots_parent_path, plot_name=name + '_' + metric, padding=0)
 
@@ -166,22 +178,15 @@ if __name__ == '__main__':
     plot_height = plot_width * 1
 
     plot_legend = [
-        r'RSMA, $\alpha=0$',
-        r'RSMA, $\alpha=0.25$',
-        r'RSMA, $\alpha=0.5$',
-        r'RSMA, $\alpha=0.75$',
-        'MMSE',
-        r'RSMA genie',
+        r'RSMA $\alpha=0$',
+        r'RSMA $\alpha=0.25$',
+        r'RSMA $\alpha=0.5$',
+        r'RSMA $\alpha=0.75$',
+        r'MMSE $\alpha=1$',
+        r'RSMA $\alpha*$',
     ]
 
-    plot_markerstyle = [
-        'None',   # alpha=0
-        'None',   # alpha=0.25
-        'None',   # alpha=0.5
-        'None',   # alpha=0.75
-        'x',   # MMSE
-        'o',  # genie
-    ]
+    plot_markerstyle = [None, None, None, None, 'x', 'o']
 
     plot_colors = [
         change_lightness(plot_cfg.cp3['red1'], 1),
@@ -205,7 +210,7 @@ if __name__ == '__main__':
         markerstyle=plot_markerstyle,
         linestyles=plot_linestyles,
         plots_parent_path=plot_cfg.plots_parent_path,
-        power_factor_from_path_idx=5,  # <-- genie file
+        power_factor_from_path_idx=5,
         plot_power_factor=True,
     )
 

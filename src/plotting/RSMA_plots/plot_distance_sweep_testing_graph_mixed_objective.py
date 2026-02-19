@@ -120,7 +120,7 @@ if __name__ == '__main__':
     data_paths = [
         Path(cfg.output_metrics_path,
              '01_user_distance_without_error', '01_mixed_objective',
-             'testing_mmse_usersweep_500_50000.gzip'),
+             'testing_rsma_genie_sweep_500_50000.gzip'),
         Path(cfg.output_metrics_path,
              '01_user_distance_without_error','01_mixed_objective',
              'testing_learned_usersweep_500_50000.gzip'),
@@ -145,7 +145,7 @@ if __name__ == '__main__':
     plot_width = 0.99 * plot_cfg.textwidth
     plot_height = plot_width * 0.66
 
-    plot_legend = ['MMSE', 'SDMA', 'RSMA full', '$ \\alpha =1 $','RSMA power','RSMA power genie']
+    plot_legend = [r'RMSA $\alpha*$', 'SDMA', 'RSMA full', '$ \\alpha =1 $','RSMA power','RSMA power genie']
     plot_markerstyle = [ 'o', 's', 'd', '','d','']
     plot_colors = [ change_lightness(plot_cfg.cp2['black'], 1), plot_cfg.cp3['blue2'], change_lightness(plot_cfg.cp3['red2'], 1), plot_cfg.cp2['green'],plot_cfg.cp2['gold'],plot_cfg.cp2['magenta']]
     plot_linestyles = [ '-', '-', '-', ':','-','-']

@@ -40,6 +40,7 @@ from src.data.calc_fairness_RSMA import (
 )
 from src.data.precoder.mmse_precoder import (
     mmse_precoder_normalized,
+    mmse_precoder_user_specific_normalized,
 )
 from src.data.precoder.rate_splitting import rate_splitting_no_norm
 from src.utils.real_complex_vector_reshaping import (
@@ -154,7 +155,7 @@ def train_sac_RSMA_power_and_common_part(
 
     logger = config.logger.getChild(__name__)
 
-    config.config_learner.algorithm_args['network_args']['num_actions'] = 1 + 2 * config.sat_tot_ant_nr
+    config.config_learner.algorithm_args['network_args']['num_actions'] = 1 + config.user_nr + 2 * config.sat_tot_ant_nr
 
     satellite_manager = SatelliteManager(config=config)
     user_manager = UserManager(config=config)
@@ -212,23 +213,45 @@ def train_sac_RSMA_power_and_common_part(
             # rsma_factor = 0.7 * (np.tanh(action) + 0.8)
             rsma_factor = np.clip(action[0], 0, 1)  # guarantee values between 0 and 1
 
+            # power factors for users in private part
+            power_factors_private_users = action[1:config.user_nr +1]
+
             # reshape to fit reward calculation
 
-            common_part_precoding_no_norm = real_vector_to_half_complex_vector(action[1:])
+            common_part_precoding_no_norm = real_vector_to_half_complex_vector(action[config.user_nr +1:])
+
             # w_precoder_vector = rad_and_phase_to_complex_vector(action)
 
             power_constraint_private_part = config.power_constraint_watt**rsma_factor
             power_constraint_common_part = config.power_constraint_watt - power_constraint_private_part
 
-            common_power = np.linalg.norm(common_part_precoding_no_norm, ord=2)
-            common_part_precoding = np.sqrt(power_constraint_common_part) * common_part_precoding_no_norm / common_power
+            common_power = np.linalg.norm(common_part_precoding_no_norm, ord=2) + 1e-9
 
-            private_part_precoding = mmse_precoder_normalized(
+            if power_constraint_common_part <= 1e-12:
+                # no common budget -> common part is zero
+                common_part_precoding = np.zeros_like(common_part_precoding_no_norm)
+            elif common_power <= 1e-6:
+                # common_raw is (almost) zero but budget > 0 -> use a stable default direction
+                common_part_precoding = np.zeros_like(common_part_precoding_no_norm)
+            else:
+                common_part_precoding = (
+                        np.sqrt(power_constraint_common_part) * common_part_precoding_no_norm / common_power
+                )
+
+            # common_part_precoding = np.sqrt(power_constraint_common_part) * common_part_precoding_no_norm / common_power
+
+            # Ensuring sum of power of all users is within power_constraint_private_part
+            power_factors_private_users_positive = np.clip(power_factors_private_users, 0, power_constraint_private_part)
+            sum_power_users = np.sum(power_factors_private_users_positive) + 1e-9
+            private_power_scale = min(1, power_constraint_private_part/sum_power_users)
+            power_factors_private_users_normalized = power_factors_private_users_positive * private_power_scale
+
+
+            private_part_precoding = mmse_precoder_user_specific_normalized(
                 channel_matrix=satellite_manager.erroneous_channel_state_information,
                 noise_power_watt=config.noise_power_watt,
                 power_constraint_watt=power_constraint_private_part,
-                sat_nr=config.sat_nr,
-                sat_ant_nr=config.sat_ant_nr
+                power_factors_users=power_factors_private_users_normalized,
             )
 
             w_precoder = np.hstack([common_part_precoding[np.newaxis].T, private_part_precoding])
