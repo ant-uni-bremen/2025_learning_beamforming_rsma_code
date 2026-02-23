@@ -46,7 +46,7 @@ def mmse_precoder_user_specific_normalized(
         power_constraint_watt=power_constraint_watt,
     )
 
-    precoding_vectors_norms = np.linalg.norm(precoding_matrix, axis=0) + 1e-9
+    precoding_vectors_norms = np.linalg.norm(precoding_matrix, axis=0) + 1e-12
     precoding_matrix_normalized = precoding_matrix / precoding_vectors_norms
 
     precoding_matrix_normed = precoding_matrix_normalized * np.sqrt(power_factors_users)[None, :]

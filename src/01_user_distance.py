@@ -9,6 +9,7 @@ from src.analysis.helpers.test_mmse_precoder import test_mmse_precoder_error_swe
 from src.analysis.helpers.test_learned_precoder import test_sac_precoder_error_sweep, \
     test_sac_precoder_user_distance_sweep
 from src.analysis.helpers.test_learned_precoder import test_learned_rsma_complete_user_distance_sweep
+from src.analysis.helpers.test_learned_precoder import test_learned_rsma_power_common_user_distance_sweep
 from src.analysis.helpers.test_mmse_precoder import test_mmse_precoder_user_distance_sweep
 from src.analysis.helpers.test_rsma_precoder import test_rsma_precoder_user_distance_sweep
 from src.analysis.helpers.test_mrc_precoder import test_mrc_precoder_user_distance_sweep
@@ -26,19 +27,27 @@ config = Config()
 #     metrics=['sumrate', 'fairness'],
 # )
 
-test_rsma_precoder_user_distance_sweep(
-    config=config,
-    distance_sweep_range=user_dist_sweep_range,
-    rsma_factor=0,
-    common_part_precoding_style='basic',
-    monte_carlo_iterations=monte_carlo_iterations,
-    metrics='sumrate',
-    )
+# test_rsma_precoder_user_distance_sweep(
+#     config=config,
+#     distance_sweep_range=user_dist_sweep_range,
+#     rsma_factor=0.75,
+#     common_part_precoding_style='basic',
+#     monte_carlo_iterations=monte_carlo_iterations,
+#     metrics=['sumrate','fairness'],
+#     )
 
 
+# model_path= Path(config.trained_models_path, 'RSMA_Journal', '01_sum_rate','power_common_rsma_snap_2.917' )
+#
+# test_learned_rsma_power_common_user_distance_sweep(
+#     config=config,
+#     model_path=model_path,
+#     distance_sweep_range=user_dist_sweep_range,
+#     monte_carlo_iterations=monte_carlo_iterations,
+#     metrics=['sumrate', 'fairness'],)
 
 
-# model_path= Path(config.trained_models_path, 'RSMA_Journal', '01_sum_rate','full_snap_3.464' )
+# model_path= Path(config.trained_models_path, 'RSMA_Journal', '01_mixed_objective_error','full_snap_3.764' )
 #
 # test_sac_precoder_user_distance_sweep(
 #     config=config,
@@ -48,15 +57,15 @@ test_rsma_precoder_user_distance_sweep(
 #     metrics=['sumrate','fairness'],
 # )
 
-# model_path= Path(config.trained_models_path, 'RSMA_Journal', '01_sum_rate', 'full_rsma_snap_3.451')
-#
-# test_learned_rsma_complete_user_distance_sweep(
-#     config=config,
-#     model_path=model_path,
-#     distance_sweep_range=user_dist_sweep_range,
-#     monte_carlo_iterations=monte_carlo_iterations,
-#     metrics=['sumrate','fairness'],
-# )
+model_path= Path(config.trained_models_path, 'RSMA_Journal', '01_mixed_objective_error', 'full_rsma_snap_3.863')
+
+test_learned_rsma_complete_user_distance_sweep(
+    config=config,
+    model_path=model_path,
+    distance_sweep_range=user_dist_sweep_range,
+    monte_carlo_iterations=monte_carlo_iterations,
+    metrics=['sumrate','fairness'],
+)
 
 # model_path= Path(config.trained_models_path, 'RSMA_Journal', 'full_rsma_snap_2.871')
 #

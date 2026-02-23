@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
 from pathlib import Path
+from fractions import Fraction
 
 from src.config.config import Config
 from src.config.config_plotting import (
@@ -110,25 +111,32 @@ def plot_distance_sweep_testing_graph(
     ax.set_ylabel(y_label)
     ax.set_xlabel('User Distance $d_\mathcal{K}$ [km]')
     ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, pos: f'{x / 1000:g}'))
+    ax.set_ylim(0.3, 1.1)
+    ax.set_yticks([1/3, 2/3, 1.0])
+    ax.yaxis.set_major_formatter(
+        mticker.FuncFormatter(lambda y, pos: str(Fraction(y).limit_denominator()))
+    )
 
     # --- alpha curve (top axis) from selected dataset (genie)
-    if plot_power_factor:
-        x_pf, metrics_pf = data[power_factor_from_path_idx]
-        pf_key = get_power_factor_key(metrics_pf)
-        alpha = metrics_pf[pf_key]['mean'] if isinstance(metrics_pf[pf_key], dict) else metrics_pf[pf_key]
+    # if plot_power_factor:
+    #     x_pf, metrics_pf = data[power_factor_from_path_idx]
+    #     pf_key = get_power_factor_key(metrics_pf)
+    #     alpha = metrics_pf[pf_key]['mean'] if isinstance(metrics_pf[pf_key], dict) else metrics_pf[pf_key]
+    #
+    #     ax_alpha.plot(
+    #         x_pf, alpha,
+    #         linestyle='None',
+    #         marker='o',
+    #         markersize=4,
+    #         color='black',
+    #         markerfacecolor='none',
+    #         markeredgewidth=1.0,
+    #     )
+    #     ax_alpha.set_ylabel(r'$\alpha*$')
+    #     ax_alpha.set_ylim(0.0, 1.2)
+    #     ax_alpha.set_yticks([0.0, 0.5, 1.0])
 
-        ax_alpha.plot(
-            x_pf, alpha,
-            linestyle='None',
-            marker='o',
-            markersize=4,
-            color='black',
-            markerfacecolor='none',
-            markeredgewidth=1.0,
-        )
-        ax_alpha.set_ylabel(r'$\alpha*$')
-        ax_alpha.set_ylim(0.0, 1.2)
-        ax_alpha.set_yticks([0.0, 0.5, 1.0])
+
 
     # --- styling first (optional)
     generic_styling(ax=ax)
@@ -144,11 +152,11 @@ def plot_distance_sweep_testing_graph(
         # Put a legend below current axis
         ax.legend(legend,
                   loc='upper center',
-                  bbox_to_anchor=(0.48, -0.2),
+                  bbox_to_anchor=(0.5, -0.45),
                   fancybox=True,
                   ncol=3)
 
-        fig.subplots_adjust(bottom=0.25)     # Space for legends
+        fig.subplots_adjust(bottom=0.5)     # Space for legends
 
     # --- also give a bit of top margin (prevents cutting)
     fig.subplots_adjust(top=0.98)
@@ -176,7 +184,7 @@ if __name__ == '__main__':
     ]
 
     plot_width = 0.99 * plot_cfg.textwidth
-    plot_height = plot_width * 1
+    plot_height = plot_width * 0.5
 
     plot_legend = [
         r'RSMA $\alpha=0$',
@@ -202,7 +210,7 @@ if __name__ == '__main__':
 
     plot_distance_sweep_testing_graph(
         paths=data_paths,
-        metric='sumrate',
+        metric='fairness',
         name='dist_sweep_test_long',
         width=plot_width,
         height=plot_height,

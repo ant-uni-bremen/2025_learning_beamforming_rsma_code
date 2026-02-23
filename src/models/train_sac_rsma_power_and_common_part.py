@@ -225,12 +225,12 @@ def train_sac_RSMA_power_and_common_part(
             power_constraint_private_part = config.power_constraint_watt**rsma_factor
             power_constraint_common_part = config.power_constraint_watt - power_constraint_private_part
 
-            common_power = np.linalg.norm(common_part_precoding_no_norm, ord=2) + 1e-9
+            common_power = np.linalg.norm(common_part_precoding_no_norm, ord=2) + 1e-12
 
             if power_constraint_common_part <= 1e-12:
                 # no common budget -> common part is zero
                 common_part_precoding = np.zeros_like(common_part_precoding_no_norm)
-            elif common_power <= 1e-6:
+            elif common_power <= 1e-9:
                 # common_raw is (almost) zero but budget > 0 -> use a stable default direction
                 common_part_precoding = np.zeros_like(common_part_precoding_no_norm)
             else:
@@ -242,7 +242,7 @@ def train_sac_RSMA_power_and_common_part(
 
             # Ensuring sum of power of all users is within power_constraint_private_part
             power_factors_private_users_positive = np.clip(power_factors_private_users, 0, power_constraint_private_part)
-            sum_power_users = np.sum(power_factors_private_users_positive) + 1e-9
+            sum_power_users = np.sum(power_factors_private_users_positive) + 1e-12
             private_power_scale = min(1, power_constraint_private_part/sum_power_users)
             power_factors_private_users_normalized = power_factors_private_users_positive * private_power_scale
 

@@ -3,6 +3,8 @@ import gzip
 import pickle
 
 import matplotlib.pyplot as plt
+from fractions import Fraction
+import matplotlib.ticker as mticker
 import matplotlib.patches as mpatches
 import numpy as np
 from pathlib import (
@@ -80,9 +82,9 @@ def plot_distance_sweep_testing_graph(
         # else:
         #     markevery = (int(len(data_entry[0])/10 / len(data)*data_id), int(len(data_entry[0])/10))
 
-        filled = (data_id == 2)
+        filled = (data_id == 3)
         step = 18
-        offsets = [0, 0, 6, 6]  # pro Kurve ein anderer Start-Offset
+        offsets = [0, 0, 6, 12]  # pro Kurve ein anderer Start-Offset
 
         offset = offsets[data_id] % step
         markevery = (offset, step)
@@ -96,21 +98,28 @@ def plot_distance_sweep_testing_graph(
                 markerfacecolor=(color if filled else 'none'),
                 )
 
-    ax.set_xlabel('User Distance $ D_{usr} $ [m]')
+
+    ax.set_xlabel('User Distance $d_\mathcal{K}$ [km]')
+    ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, pos: f'{x / 1000:g}'))
 
     if metric == 'sumrate':
-        ax.set_ylabel('Rate $ R $ [bps/Hz]')
+        ax.set_ylabel('Achievable Rate $ R $ [bps/Hz]')
     elif metric == 'fairness':
         ax.set_ylabel('Fairness $F$')
+        ax.set_ylim(0.3, 1.1)
+        ax.set_yticks([1 / 3, 2 / 3, 1.0])
+        ax.yaxis.set_major_formatter(
+            mticker.FuncFormatter(lambda y, pos: str(Fraction(y).limit_denominator()))
+        )
 
     if legend:
-        ax.legend(legend, ncols=2)
+        ax.legend(legend, ncols=1)
+
 
     generic_styling(ax=ax)
     fig.tight_layout(pad=0)
 
-    save_figures(plots_parent_path=plots_parent_path, plot_name=name+'_'+metric, padding=0)
-
+    save_figures(plots_parent_path=plots_parent_path, plot_name=name+'_'+metric, padding=0.05)
 
 if __name__ == '__main__':
 
@@ -128,31 +137,27 @@ if __name__ == '__main__':
              '01_user_distance_without_error', '01_mixed_objective',
              'testing_learned_rsma_full_usersweep_500_50000.gzip'),
         # Path(cfg.output_metrics_path,
-        #      '01_user_distance_without_error', 'distance_sweep',
-        #      'testing_rsma_usersweep_1000_50000_alpha_0.gzip'),
-        # Path(cfg.output_metrics_path,
-        #      '01_user_distance_without_error', 'distance_sweep',
-        #      'testing_rsma_usersweep_1000_50000_alpha_0.25.gzip'),
-        # Path(cfg.output_metrics_path,
-        #      '01_user_distance_without_error', 'distance_sweep',
-        #      'testing_rsma_usersweep_1000_50000_alpha_0.75.gzip'),
-        # Path(cfg.output_metrics_path,
-        #      '01_user_distance_without_error', 'distance_sweep',
-        #      'testing_rsma_usersweep_1000_50000_alpha_0.75.gzip'),
+        #      '01_user_distance_without_error', '01_sumrate',
+        #      'testing_learned_rsma_power_common_usersweep_500_50000.gzip'),
 
     ]
 
     plot_width = 0.99 * plot_cfg.textwidth
     plot_height = plot_width * 0.66
 
-    plot_legend = [r'RMSA $\alpha*$', 'SDMA', 'RSMA full', '$ \\alpha =1 $','RSMA power','RSMA power genie']
-    plot_markerstyle = [ 'o', 's', 'd', '','d','']
-    plot_colors = [ change_lightness(plot_cfg.cp2['black'], 1), plot_cfg.cp3['blue2'], change_lightness(plot_cfg.cp3['red2'], 1), plot_cfg.cp2['green'],plot_cfg.cp2['gold'],plot_cfg.cp2['magenta']]
-    plot_linestyles = [ '-', '-', '-', ':','-','-']
+    plot_legend = [
+        r'RSMA $\alpha*$',
+        r'L-SDMA',
+        r'L-RSMA',
+        r'L-RSMA LC',
+    ]
+    plot_markerstyle = [ 'o', 's', 'd', 'x']
+    plot_colors = [ change_lightness(plot_cfg.cp2['black'], 1), plot_cfg.cp3['blue2'], change_lightness(plot_cfg.cp3['red2'], 1), plot_cfg.cp3['red1']]
+    plot_linestyles = [ '-', '-', '-', '-',]
 
     plot_distance_sweep_testing_graph(
         paths=data_paths,
-        metric='fairness',
+        metric='sumrate',
         name='dist_sweep_test_long',
         width=plot_width,
         height=plot_height,

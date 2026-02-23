@@ -10,6 +10,7 @@ from src.models.precoders.learned_precoder import get_learned_rsma_power_and_com
 from src.models.precoders.adapted_precoder import adapt_robust_slnr_complete_precoder_normed
 from src.models.precoders.scaled_precoder import scale_robust_slnr_complete_precoder_normed
 from src.data.precoder.mmse_precoder import mmse_precoder_normalized
+from src.data.precoder.mmse_precoder import mmse_precoder_user_specific_normalized
 from src.data.precoder.mmse_precoder_decentral import mmse_precoder_decentral_blind_normed
 from src.data.precoder.mmse_precoder_decentral import mmse_precoder_decentral_limited_normalized
 from src.data.precoder.mrc_precoder import mrc_precoder_normalized
@@ -181,23 +182,39 @@ def get_precoding_learned_rsma_power_and_common_part(
         **config.config_learner.get_state_args
     )
 
-    power_factor_network, common_part_precoding_no_norm = get_learned_rsma_power_and_common_part(
+    power_factor_network, power_factors_private_users,common_part_precoding_no_norm = get_learned_rsma_power_and_common_part(
         state=state,
         precoder_network=precoder_network,
+        user_nr=config.user_nr,
     )
 
     power_constraint_private_part = config.power_constraint_watt ** power_factor_network
     power_constraint_common_part = config.power_constraint_watt - power_constraint_private_part
 
-    common_power = np.linalg.norm(common_part_precoding_no_norm, ord=2)
-    common_part_precoding = np.sqrt(power_constraint_common_part) * common_part_precoding_no_norm / common_power
+    common_power = np.linalg.norm(common_part_precoding_no_norm, ord=2) + 1e-12
 
-    private_part_precoding = mmse_precoder_normalized(
+    if power_constraint_common_part <= 1e-12:
+        # no common budget -> common part is zero
+        common_part_precoding = np.zeros_like(common_part_precoding_no_norm)
+    elif common_power <= 1e-9:
+        # common_raw is (almost) zero but budget > 0 -> use a stable default direction
+        common_part_precoding = np.zeros_like(common_part_precoding_no_norm)
+    else:
+        common_part_precoding = (
+                np.sqrt(power_constraint_common_part) * common_part_precoding_no_norm / common_power
+        )
+
+    # Ensuring sum of power of all users is within power_constraint_private_part
+    power_factors_private_users_positive = np.clip(power_factors_private_users, 0, power_constraint_private_part)
+    sum_power_users = np.sum(power_factors_private_users_positive) + 1e-12
+    private_power_scale = min(1, power_constraint_private_part / sum_power_users)
+    power_factors_private_users_normalized = power_factors_private_users_positive * private_power_scale
+
+    private_part_precoding = mmse_precoder_user_specific_normalized(
         channel_matrix=satellite_manager.erroneous_channel_state_information,
         noise_power_watt=config.noise_power_watt,
         power_constraint_watt=power_constraint_private_part,
-        sat_nr=config.sat_nr,
-        sat_ant_nr=config.sat_ant_nr
+        power_factors_users=power_factors_private_users_normalized,
     )
 
     w_precoder = np.hstack([common_part_precoding[np.newaxis].T, private_part_precoding])
