@@ -4,9 +4,11 @@ import numpy as np
 import src
 from src.data.calc_fairness import calc_jain_fairness
 from src.data.calc_sum_rate import calc_sum_rate
+from src.data.calc_tx_power_distribution import calc_tx_power_distribution
 from src.analysis.helpers.test_precoder_error_sweep import test_precoder_error_sweep
 from src.analysis.helpers.test_precoder_user_distance_sweep import test_precoder_user_distance_sweep
 from src.analysis.helpers.test_precoder_user_sweep import test_precoder_user_sweep
+from src.analysis.helpers.test_precoder_tx_power_distribution import test_precoder_tx_power_distribution
 from src.utils.get_precoding import (
     get_precoding_mmse,
     get_precoding_mmse_decentralized_limited,
@@ -64,6 +66,25 @@ def test_mmse_precoder_user_distance_sweep(
         mode='user',
         get_precoder_func=lambda cfg, usr_man, sat_man: get_precoding_mmse(cfg, usr_man, sat_man),
         calc_reward_funcs=calc_reward_funcs,
+    )
+
+    return metrics
+
+def test_mmse_precoder_tx_power_distribution(
+    config: 'src.config.config.Config',
+    distance_sweep_range: np.ndarray,
+    monte_carlo_iterations: int,
+) -> dict:
+    """Test the MMSE precoder over a range of distances with zero error."""
+
+    metrics = test_precoder_tx_power_distribution(
+        config=config,
+        distance_sweep_range=distance_sweep_range,
+        precoder_name='mmse',
+        monte_carlo_iterations=monte_carlo_iterations,
+        mode='user',
+        get_precoder_func=lambda cfg, usr_man, sat_man: get_precoding_mmse(cfg, usr_man, sat_man),
+        calc_reward_func=calc_tx_power_distribution,
     )
 
     return metrics

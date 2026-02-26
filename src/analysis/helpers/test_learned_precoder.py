@@ -7,10 +7,13 @@ import src
 from src.analysis.helpers.test_precoder_error_sweep import test_precoder_error_sweep
 from src.analysis.helpers.test_precoder_user_distance_sweep import test_precoder_user_distance_sweep
 from src.analysis.helpers.test_precoder_user_sweep import test_precoder_user_sweep
+from src.analysis.helpers.test_precoder_tx_power_distribution import test_precoder_tx_power_distribution
 from src.data.calc_sum_rate import calc_sum_rate
 from src.data.calc_fairness import calc_jain_fairness
 from src.data.calc_sum_rate_RSMA import calc_sum_rate_RSMA
 from src.data.calc_fairness_RSMA import calc_jain_fairness_RSMA
+from src.data.calc_tx_power_distribution import calc_tx_power_distribution
+from src.data.calc_tx_power_distribution_RSMA import calc_tx_power_distribution_RSMA
 from src.utils.load_model import (
     load_model,
     load_models,
@@ -86,6 +89,32 @@ def test_sac_precoder_user_distance_sweep(
         mode='user',
         get_precoder_func=lambda cfg, usr_man, sat_man: get_precoding_learned(cfg, usr_man, sat_man, norm_factors, precoder_network),
         calc_reward_funcs=calc_reward_funcs,
+    )
+
+    return metrics
+
+def test_sac_precoder_tx_power_distribution(
+        config: 'src.config.config.Config',
+        distance_sweep_range: np.ndarray,
+        model_path: Path,
+        monte_carlo_iterations: int,
+) -> dict:
+    """Test a precoder over a range of distances with zero error and get power per user."""
+
+
+    precoder_network, norm_factors = load_model(model_path)
+
+    if norm_factors != {}:
+        config.config_learner.get_state_args['norm_state'] = True
+
+    metrics = test_precoder_tx_power_distribution(
+        config=config,
+        distance_sweep_range=distance_sweep_range,
+        precoder_name='learned',
+        monte_carlo_iterations=monte_carlo_iterations,
+        mode='user',
+        get_precoder_func=lambda cfg, usr_man, sat_man: get_precoding_learned(cfg, usr_man, sat_man, norm_factors, precoder_network),
+        calc_reward_func=calc_tx_power_distribution,
     )
 
     return metrics
@@ -314,6 +343,32 @@ def test_learned_rsma_complete_user_distance_sweep(
 
     return metrics
 
+def test_learned_rsma_complete_tx_power_distribution(
+        config: 'src.config.config.Config',
+        distance_sweep_range: np.ndarray,
+        model_path: Path,
+        monte_carlo_iterations: int,
+) -> dict:
+    """Test a precoder over a range of distances with zero error and get power per user."""
+
+
+    rsma_network, norm_factors  = load_model(model_path)
+
+    if norm_factors != {}:
+        config.config_learner.get_state_args['norm_state'] = True
+
+    metrics = test_precoder_tx_power_distribution(
+        config=config,
+        distance_sweep_range=distance_sweep_range,
+        precoder_name='learned_rsma_full',
+        monte_carlo_iterations=monte_carlo_iterations,
+        mode='user',
+        get_precoder_func=lambda cfg, usr_man, sat_man: get_precoding_learned_rsma_complete(cfg, usr_man, sat_man, norm_factors, rsma_network),
+        calc_reward_func=calc_tx_power_distribution_RSMA,
+    )
+
+    return metrics
+
 def test_learned_rsma_complete_user_number_sweep(
         config: 'import src.config.config',
         user_number_sweep_range: np.ndarray,
@@ -501,6 +556,33 @@ def test_learned_rsma_power_common_user_distance_sweep(
         get_precoder_func=lambda cfg, usr_man, sat_man: get_precoding_learned_rsma_power_and_common_part(cfg, usr_man, sat_man, norm_factors,
                                                                                    rsma_power_common_network),
         calc_reward_funcs=calc_reward_funcs,
+    )
+
+    return metrics
+
+def test_learned_rsma_power_common_tx_power_distribution(
+        config: 'src.config.config.Config',
+        distance_sweep_range: np.ndarray,
+        model_path: Path,
+        monte_carlo_iterations: int,
+) -> dict:
+    """Test a precoder over a range of distances with zero error and get power per user."""
+
+
+    rsma_power_common_network, norm_factors  = load_model(model_path)
+
+    if norm_factors != {}:
+        config.config_learner.get_state_args['norm_state'] = True
+
+    metrics = test_precoder_tx_power_distribution(
+        config=config,
+        distance_sweep_range=distance_sweep_range,
+        precoder_name='learned_rsma_power_common',
+        monte_carlo_iterations=monte_carlo_iterations,
+        mode='user',
+        get_precoder_func=lambda cfg, usr_man, sat_man: get_precoding_learned_rsma_power_and_common_part(cfg, usr_man, sat_man, norm_factors,
+                                                                                   rsma_power_common_network),
+        calc_reward_func=calc_tx_power_distribution_RSMA,
     )
 
     return metrics
