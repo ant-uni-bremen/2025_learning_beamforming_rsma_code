@@ -106,6 +106,7 @@ def get_learned_rsma_power_and_common_part(
         state: np.ndarray,
         precoder_network: tf.keras.Model,
         user_nr: int,
+        sat_tot_ant_nr:int,
         private_part_precoding_style: str,
 ) -> tuple[float | None, np.ndarray, np.ndarray]:
 
@@ -125,11 +126,12 @@ def get_learned_rsma_power_and_common_part(
         else:
             option = 2
 
+
         power_factors_private_users = network_output[1:user_nr + 1]
         power_factors_private_users_positive = (np.clip(power_factors_private_users, -1, 1) + 1) / 2
 
         common_part_precoding_no_norm = real_vector_to_half_complex_vector(
-            network_output[user_nr + 1:]
+            network_output[user_nr + 1:(1 + user_nr + 2 * sat_tot_ant_nr)]
         )
 
         return option, power_factors_private_users_positive, common_part_precoding_no_norm
@@ -139,7 +141,7 @@ def get_learned_rsma_power_and_common_part(
         power_factors_private_users_positive = (np.clip(power_factors_private_users, -1, 1) + 1) / 2
 
         common_part_precoding_no_norm = real_vector_to_half_complex_vector(
-            network_output[user_nr:]
+            network_output[user_nr:(1 + user_nr + 2 * sat_tot_ant_nr)]
         )
         return None, power_factors_private_users_positive, common_part_precoding_no_norm
 

@@ -3,7 +3,9 @@ import pickle
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
+from matplotlib.lines import Line2D
 from pathlib import Path
+import math
 
 from src.config.config import Config
 from src.config.config_plotting import (
@@ -135,20 +137,62 @@ def plot_distance_sweep_testing_graph(
     if plot_power_factor:
         generic_styling(ax=ax_alpha)
 
-    # --- Legend BELOW the plot (figure-level)
+    # # --- Legend BELOW the plot (figure-level)
+    # if legend:
+    #     box = ax.get_position()
+    #     ax.set_position([box.x0, box.y0 + box.height * 0.1,
+    #                      box.width, box.height * 0.9])
+    #
+    #     # Put a legend below current axis
+    #     ax.legend(legend,
+    #               loc='upper center',
+    #               bbox_to_anchor=(0.48, -0.2),
+    #               fancybox=True,
+    #               ncol=2)
+    #
+    #     fig.subplots_adjust(bottom=0.25)     # Space for legends
+
+    # --- Legend BELOW the plot
     if legend:
         box = ax.get_position()
-        ax.set_position([box.x0, box.y0 + box.height * 0.1,
-                         box.width, box.height * 0.9])
+        ax.set_position([
+            box.x0,
+            box.y0 + box.height * 0.1,
+            box.width,
+            box.height * 0.9
+        ])
 
-        # Put a legend below current axis
-        ax.legend(legend,
-                  loc='upper center',
-                  bbox_to_anchor=(0.48, -0.2),
-                  fancybox=True,
-                  ncol=3)
+        handles = ax.get_lines()[:len(legend)]
+        labels = legend.copy()
 
-        fig.subplots_adjust(bottom=0.25)     # Space for legends
+        # gewünschte Anzahl Reihen
+        nrows = 4
+        ncol = math.ceil(len(labels) / nrows)
+
+        # auffüllen, damit jede Spalte nrows Einträge hat
+        n_missing = nrows * ncol - len(labels)
+
+        dummy_handles = [
+            Line2D([], [], linestyle='None', marker=None, alpha=0)
+            for _ in range(n_missing)
+        ]
+
+        handles = handles + dummy_handles
+        labels = labels + [''] * n_missing
+
+        ax.legend(
+            handles,
+            labels,
+            loc='upper center',
+            bbox_to_anchor=(0.48, -0.2),
+            fancybox=True,
+            ncol=ncol,
+            frameon=True,
+        )
+
+        fig.subplots_adjust(bottom=0.30)
+
+
 
     # --- also give a bit of top margin (prevents cutting)
     fig.subplots_adjust(top=0.98)

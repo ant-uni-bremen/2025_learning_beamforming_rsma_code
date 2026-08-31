@@ -12,6 +12,7 @@ from src.data.precoder.mmse_precoder import mmse_precoder_normalized
 from src.data.precoder.calc_autocorrelation import calc_autocorrelation
 from src.data.precoder.robust_SLNR_precoder import robust_SLNR_precoder_no_norm
 from src.models.precoders.learned_precoder import get_learned_precoder_normalized
+from src.models.precoders.learned_precoder import get_learned_rsma_power_and_common_part
 from src.utils.update_sim import update_sim
 from src.utils.profiling import start_profiling, end_profiling
 from src.utils.load_model import load_model
@@ -50,6 +51,36 @@ def main():
             return w_robust_slnr
 
     elif which_precoder == 'sac':
+
+        model, norm_factors = load_model(model_path)
+
+        def precoder(sat_man):
+            state = config.config_learner.get_state(
+                config=config,
+                user_manager=user_manager,
+                satellite_manager=sat_man,
+                norm_factors=norm_factors,
+                **config.config_learner.get_state_args
+            )
+            w_learned = get_learned_precoder_normalized(state=state, precoder_network=model, **config.learned_precoder_args)
+            return w_learned
+
+    elif which_precoder == 'l-rsma':
+
+        model, norm_factors = load_model(model_path)
+
+        def precoder(sat_man):
+            state = config.config_learner.get_state(
+                config=config,
+                user_manager=user_manager,
+                satellite_manager=sat_man,
+                norm_factors=norm_factors,
+                **config.config_learner.get_state_args
+            )
+            w_learned = get_learned_precoder_normalized(state=state, precoder_network=model, **config.learned_precoder_args)
+            return w_learned
+
+    elif which_precoder == 'h-rsma':
 
         model, norm_factors = load_model(model_path)
 

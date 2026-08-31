@@ -11,7 +11,7 @@ from src.analysis.helpers.test_rsma_precoder import test_rsma_precoder_error_swe
 from src.analysis.helpers.test_rsma_precoder import test_rsma_precoder_user_number_sweep
 
 
-sweep_parameter='user_distance_sweep' # available 'error_sweep','user_distance_sweep', 'user_number_sweep'
+sweep_parameter='user_number_sweep' # available 'error_sweep','user_distance_sweep', 'user_number_sweep'
 
 def test_rsma_best_alpha_user_distance():
 
@@ -96,7 +96,7 @@ def test_rsma_best_alpha_error():
     monte_carlo_iterations = 10000
 
     rsma_factors = np.arange(0, 1+0.01, step=0.01)  # exclusive interval
-    error_sweep_range = np.arange(0,0.11, 0.01)
+    error_sweep_range = np.arange(0,0.055, 0.005)
 
     cfg = Config()
     cfg.show_plots = False
@@ -175,7 +175,7 @@ def test_rsma_best_alpha_user_number():
     monte_carlo_iterations = 10000
 
     rsma_factors = np.arange(0, 1+0.01, step=0.01)  # exclusive interval
-    user_number_sweep_range = np.arange(1,16, 1)
+    user_number_sweep_range = np.arange(1,13, 1)
 
     cfg = Config()
     cfg.show_plots = False
@@ -253,5 +253,7 @@ if __name__ == '__main__':
         test_rsma_best_alpha_user_distance()
     elif sweep_parameter == 'error_sweep':
         test_rsma_best_alpha_error()
+    elif sweep_parameter == 'user_number_sweep':
+        test_rsma_best_alpha_user_number()
     else:
         ValueError("No valid sweep_parameter provided")

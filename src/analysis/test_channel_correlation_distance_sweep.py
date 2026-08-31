@@ -46,8 +46,8 @@ def test_channel_correlation_user_sweep(
             update_sim(config, satellite_manager, user_manager)
 
             distance_correlations[iteration] = abs(calc_channel_correlation(
-                channel_1=satellite_manager.channel_state_information[user_1_id, :],
-                channel_2=satellite_manager.channel_state_information[user_2_id, :]
+                channel_1=satellite_manager.erroneous_channel_state_information[user_1_id, :],
+                channel_2=satellite_manager.erroneous_channel_state_information[user_2_id, :]
             ))
 
         progress_printer(progress=(distance_id+1)/len(distance_sweep_range), real_time_start=start)
@@ -99,8 +99,8 @@ def test_channel_correlation_user_sweep(
 
 if __name__ == '__main__':
 
-    distance_sweep_range = np.arange(500, 100500, 500)
-    monte_carlo_iterations = 1000
+    distance_sweep_range = np.arange(500, 50500, 500)
+    monte_carlo_iterations = 10000
     user_1_id = 0
     user_2_id = 1
     user_3_id = 2

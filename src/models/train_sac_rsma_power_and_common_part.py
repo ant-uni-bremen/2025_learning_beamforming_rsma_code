@@ -228,8 +228,10 @@ def train_sac_RSMA_power_and_common_part(
             # rsma_factor = 0.7 * (np.tanh(action) + 0.8)
             #rsma_factor = np.clip(action[0], 0, 1)  # guarantee values between 0 and 1
 
+            num_active_users = len(user_manager.active_user_idx)
+
             if config.private_part_precoding_style == 'RZF':
-                mmse_scale = config.noise_power_watt * (config.user_nr / config.power_constraint_watt)
+                # mmse_scale = config.noise_power_watt * (config.user_nr / config.power_constraint_watt)
                 x = (np.clip(action[0], -1, 1) + 1) / 2
 
                 if x < 1 / 3:
@@ -239,15 +241,14 @@ def train_sac_RSMA_power_and_common_part(
                 else:
                     option = 2
 
-                factor_map = np.array([0, 1, 10]) # 0 equals ZF, 1 equals MMSE, 10+ hopefully MRT
-                regularization_factor = factor_map[option] * mmse_scale
+
                 # regularization_factor = np.clip(action[0], 0, 10) * config.noise_power_watt * (config.user_nr/ config.power_constraint_watt)
-                power_factors_private_users = action[1:config.user_nr+1]
-                common_part_precoding_no_norm = real_vector_to_half_complex_vector(action[config.user_nr+1:])
+                power_factors_private_users = action[1:num_active_users +1]
+                common_part_precoding_no_norm = real_vector_to_half_complex_vector(action[num_active_users+1:(1 + num_active_users + 2 * config.sat_tot_ant_nr)])
             elif config.private_part_precoding_style in ('MRT', 'MMSE'):
                 # power factors for users in private part
-                power_factors_private_users = action[0:config.user_nr]
-                common_part_precoding_no_norm = real_vector_to_half_complex_vector(action[config.user_nr:])
+                power_factors_private_users = action[0:num_active_users ]
+                common_part_precoding_no_norm = real_vector_to_half_complex_vector(action[num_active_users:(num_active_users + 2 * config.sat_tot_ant_nr)])
             else:
                 raise ValueError(f"Unknown private part precoding mode={config.private_part_precoding_style}")
 
@@ -294,11 +295,17 @@ def train_sac_RSMA_power_and_common_part(
 
             channel_matrix_private_effective = satellite_manager.erroneous_channel_state_information.copy()
             channel_matrix_private_effective[~active_user_mask, :] = 0.0
+            active_user_count = max(1, np.sum(active_user_mask))
+            mmse_scale = config.noise_power_watt * (active_user_count / config.power_constraint_watt)
 
 
             if config.private_part_precoding_style == 'RZF':
 
+                factor_map = np.array([0, 1, 10]) # 0 equals ZF, 1 equals MMSE, 10+ hopefully MRT
+                regularization_factor = factor_map[option] * mmse_scale
+
                 if not config.matrix_inversion_approximation:
+
                     private_part_precoding = regularized_zero_forcing_precoder_user_specific_normalized(
                         # channel_matrix=satellite_manager.erroneous_channel_state_information,
                         channel_matrix=channel_matrix_private_effective,

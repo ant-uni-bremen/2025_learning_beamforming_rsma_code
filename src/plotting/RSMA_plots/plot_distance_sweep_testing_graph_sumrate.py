@@ -104,6 +104,7 @@ def plot_distance_sweep_testing_graph(
 
     if metric == 'sumrate':
         ax.set_ylabel('Achievable Rate $ R $ [bps/Hz]')
+        ax.set_ylim(0, 5.1)
     elif metric == 'fairness':
         ax.set_ylabel('Fairness $F$')
         ax.set_ylim(0.3, 1.1)
@@ -133,30 +134,27 @@ if __name__ == '__main__':
              'testing_rsma_genie_sweep_500_50000.gzip'),
         Path(cfg.output_metrics_path,
              '01_user_distance_without_error', '01_sumrate',
-             'testing_learned_usersweep_500_50000.gzip'),
+             'testing_learned_usersweep_500_50000_3.gzip'),
         Path(cfg.output_metrics_path,
              '01_user_distance_without_error', '01_sumrate',
              'testing_learned_rsma_full_usersweep_500_50000.gzip'),
-        # Path(cfg.output_metrics_path,
-        #      '01_user_distance_without_error', '01_sumrate',
-        #      'testing_learned_usersweep__ee_500_50000.gzip'),
-        # Path(cfg.output_metrics_path,
-        #      '01_user_distance_without_error', '01_sumrate',
-        #      'testing_learned_rsma_power_common_usersweep_500_50000.gzip'),
         Path(cfg.output_metrics_path,
              '01_user_distance_without_error', '01_sumrate',
-             'testing_learned_reduced_usersweep_500_50000.gzip'),
+             'testing_learned_rsma_power_common_usersweep_500_50000.gzip'),
+        # Path(cfg.output_metrics_path,
+        #      '01_user_distance_without_error', '01_sumrate',
+        #      'testing_learned_reduced_usersweep_500_50000.gzip'),
     ]
 
     plot_width = 0.99 * plot_cfg.textwidth
-    plot_height = plot_width * 0.6
-    # plot_height = plot_width * 0.4
+    plot_height = plot_width * 0.66
+    # plot_height = plot_width * 0.45
 
     plot_legend = [
         r'RSMA $\alpha*$',
         r'L-SDMA',
         r'L-RSMA',
-        r'L-RSMA LC',
+        r'H-RSMA',
     ]
     plot_markerstyle = [ 'o', 's', 'd', 'x']
     plot_colors = [ change_lightness(plot_cfg.cp2['black'], 1), plot_cfg.cp3['blue2'], change_lightness(plot_cfg.cp3['red2'], 1), plot_cfg.cp3['red1']]
@@ -164,7 +162,7 @@ if __name__ == '__main__':
 
     plot_distance_sweep_testing_graph(
         paths=data_paths,
-        metric='sumrate',
+        metric='fairness',
         name='dist_sweep_test_long',
         width=plot_width,
         height=plot_height,

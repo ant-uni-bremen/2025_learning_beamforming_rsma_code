@@ -280,6 +280,7 @@ def get_precoding_learned_rsma_power_and_common_part(
         precoder_network: tf.keras.models.Model,
 ) -> np.array:
 
+
     state = config.config_learner.get_state(
         config=config,
         user_manager=user_manager,
@@ -288,10 +289,13 @@ def get_precoding_learned_rsma_power_and_common_part(
         **config.config_learner.get_state_args
     )
 
+    num_active_users = len(user_manager.active_user_idx)
+
     option, power_factors_private_users, common_part_precoding_no_norm = get_learned_rsma_power_and_common_part(
         state=state,
         precoder_network=precoder_network,
-        user_nr=config.user_nr,
+        user_nr=num_active_users,
+        sat_tot_ant_nr=config.sat_tot_ant_nr,
         private_part_precoding_style=config.private_part_precoding_style,
     )
 

@@ -95,7 +95,7 @@ def plot_error_sweep_testing_graph(
 
         # filled = (data_id == 3)
         step = 3
-        offsets = [0, 0, 1,2,0,0,0,1,2 ]  # pro Kurve ein anderer Start-Offset
+        offsets = [0, 0, 1,2,0,0,1,2 ]
 
         offset = offsets[data_id] % step
         markevery = (offset, step)
@@ -111,16 +111,16 @@ def plot_error_sweep_testing_graph(
             fillstyle='none',
         )
 
-    ax.set_xlabel('Error Bound $\Delta \epsilon$')
+    ax.set_xlabel(r'Error Bound $\Delta \varepsilon$')
 
     if metric == 'sumrate':
         ax.set_ylabel('Achievable Rate $ R $ [bps/Hz]')
-        ax.set_ylim(0.5, 3.5)
+        ax.set_ylim(2, 4.1)
         # ax.set_yticks([1 / 3, 2 / 3, 1.0])
     elif metric == 'fairness':
         ax.set_ylabel('Fairness $F$')
-        ax.set_ylim(0.3, 1.1)
-        ax.set_yticks([1 / 3, 2 / 3, 1.0])
+        ax.set_ylim(0.6, 1.06)
+        ax.set_yticks([ 2 / 3, 1.0])
         ax.yaxis.set_major_formatter(
             mticker.FuncFormatter(lambda y, pos: str(Fraction(y).limit_denominator()))
         )
@@ -132,15 +132,18 @@ def plot_error_sweep_testing_graph(
         legend = ax.legend(
             handles, legend,
             ncols=2,
-            # frameon = False,
-            # loc='lower left',
+            loc='upper center',
+            # bbox_to_anchor=(0.48, -0.2),
+            bbox_to_anchor=(0.48, -0.275),
+            fancybox=True,
+            frameon=True,
         )
         legend.get_frame().set_linewidth(0.8)
 
     # # ---- Dreiecke auf/unter der x-Achse hinzufügen (schwarz) ----
     # ymin, ymax = ax.get_ylim()
-    # y_tri = ymin - 0.0 * (ymax - ymin)   # 5% unterhalb der Achse
-    # x_tris = [0.00, 0.05]                 # <- hier deine x-Positionen eintragen
+    # y_tri = ymin - 0.03 * (ymax - ymin)   # 5% unterhalb der Achse
+    # x_tris = [0, 0.025]                 # <- hier deine x-Positionen eintragen
     #
     # ax.plot(
     #     x_tris,
@@ -167,54 +170,51 @@ if __name__ == '__main__':
 
     data_paths = [
         Path(cfg.output_metrics_path,
-             '01_user_distance_without_error', '02_error_sweep',
-             'testing_rsma_genie_sweep_0.0_0.1.gzip'),
-        # Path(cfg.output_metrics_path,
-        #      '01_user_distance_without_error', '02_error_sweep',
-        #      'testing_learned_sweep_0.0_0.1_without_error.gzip'),
-        # Path(cfg.output_metrics_path,
-        #      '01_user_distance_without_error', '02_error_sweep',
-        #      'testing_learned_rsma_full_sweep_0.0_0.1_without_error.gzip'),
-        # Path(cfg.output_metrics_path,
-        #      '01_user_distance_without_error', '02_error_sweep',
-        #      'testing_learned_rsma_full_sweep_0.0_0.1_without_error.gzip'),
-        # Path(cfg.output_metrics_path,
-        #      '01_user_distance_without_error', '02_error_sweep',
-        #      'testing_learned_sweep_0.0_0.1_error.gzip'),
-        # Path(cfg.output_metrics_path,
-        #      '01_user_distance_without_error', '02_error_sweep',
-        #      'testing_learned_sweep_0.0_0.1_error.gzip'),
-        # Path(cfg.output_metrics_path,
-        #      '01_user_distance_without_error', '02_error_sweep',
-        #      'testing_learned_rsma_full_sweep_0.0_0.1_error.gzip'),
-        # Path(cfg.output_metrics_path,
-        #      '01_user_distance_without_error', '02_error_sweep',
-        #      'testing_learned_rsma_full_sweep_0.0_0.1_error.gzip'),
-        # Path(cfg.output_metrics_path,
-        #      'RSMA_Journal', 'error_sweep',
-        #      'testing_learned_rsma_full_sweep_0.0_0.25.gzip'),
-
+              '02_error',
+             'testing_rsma_genie_sweep_0.0_0.05.gzip'),
+        Path(cfg.output_metrics_path,
+            '02_error',
+             'testing_learned_sweep_0.0_0.05_without_error.gzip'),
+        Path(cfg.output_metrics_path,
+            '02_error',
+             'testing_learned_rsma_full_sweep_0.0_0.05_without_error.gzip'),
+        Path(cfg.output_metrics_path,
+              '02_error',
+             'testing_learned_rsma_full_sweep_0.0_0.05_without_error.gzip'),
+        Path(cfg.output_metrics_path,
+             '02_error',
+             'testing_learned_sweep_0.0_0.05.gzip'),
+        Path(cfg.output_metrics_path,
+             '02_error',
+             'testing_learned_sweep_0.0_0.05.gzip'),
+        Path(cfg.output_metrics_path,
+              '02_error',
+             'testing_learned_rsma_full_sweep_0.0_0.05.gzip'),
+        Path(cfg.output_metrics_path,
+              '02_error',
+             'testing_learned_rsma_power_common_sweep_0.0_0.05.gzip'),
     ]
 
     plot_width = 0.99 * plot_cfg.textwidth
-    plot_height = plot_width * 0.9
+    # plot_height = plot_width * 0.85
+    plot_height = plot_width * 0.725
 
     plot_legend = [r'RSMA $\alpha*$',
-                   r'L-SDMA, $\Delta \epsilon = 0$',
-                   r'L-RSMA, $\Delta \epsilon = 0$',
-                   r'L-RSMA LC, $\Delta \epsilon = 0$',
+                   r'L-SDMA, $\Delta {{\varepsilon}_{\mathrm{TP}}} = 0$',
+                   r'L-RSMA, $\Delta {{\varepsilon}_{\mathrm{TP}}} = 0$',
+                   r'H-RSMA, $\Delta {{\varepsilon}_{\mathrm{TP}}} = 0$',
                    r' ',
-                   r'L-RSMA, $\Delta \epsilon = 0.05$',
-                   r'L-RSMA, $\Delta \epsilon = 0.05$',
-                   r'L-RSMA LC, $\Delta \epsilon = 0.05$']
+                   r'L-RSMA, $\Delta {{\varepsilon}_{\mathrm{TP}}} = 0.025$',
+                   r'L-RSMA, $\Delta {{\varepsilon}_{\mathrm{TP}}} = 0.025$',
+                   r'H-RSMA, $\Delta {{\varepsilon}_{\mathrm{TP}}} = 0.025$']
 
     plot_markerstyle = ['o','s', 'd', 'x','None', 's','d','x']
-    plot_colors = [plot_cfg.cp2['black'], plot_cfg.cp3['blue2'],plot_cfg.cp3['red2'],plot_cfg.cp3['red1'], change_lightness(plot_cfg.cp3['red2'], 0) , plot_cfg.cp3['blue2'], change_lightness(plot_cfg.cp3['red2'], 1),plot_cfg.cp3['red1'] ]
-    plot_linestyles = ['-','-', '-', '-', '--', '--','--','--']
+    plot_colors = [plot_cfg.cp2['black'], change_lightness(plot_cfg.cp3['blue2'], 0.5),change_lightness(plot_cfg.cp3['red2'], 0.5),change_lightness(plot_cfg.cp3['red1'], 0.5), change_lightness(plot_cfg.cp3['red2'], 0) , plot_cfg.cp3['blue2'], change_lightness(plot_cfg.cp3['red2'], 1),plot_cfg.cp3['red1'] ]
+    plot_linestyles = ['-','--', '--', '--', '--', '-','-','-']
 
     plot_error_sweep_testing_graph(
         paths=data_paths,
-        metric='sumrate',
+        metric='fairness',
         name='error_sweep_test',
         width=plot_width,
         height=plot_height,
